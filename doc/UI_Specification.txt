@@ -1,0 +1,34 @@
+DbQueryExport
+
++ ConetentPane
+  + panel1 - Connection :: FormLayout
+                [ ] [ Jdbc Driver ] : XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+                [ ]   Database Url  : XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+                [ ]   ${Username}   : XXXXXXXXXX
+                [ ]   $(Password}   : XXXXXXXXXX
+  + panel2 - FileName :: FormLayout
+                [ Filename ]        : XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+  + panel3 - SQL and Params
+    scrollPane SQL Query :: FormLayout
+                [ ] [ Query SQL ]   : XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+                                      XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+                                      XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+                                      XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+                                      XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+    scrollPane SQL Param(s) :: FormLayout
+                [ ] SQL Param(s)    : ParamName  ParamValue Obs
+                                      ---------- ---------- ----------------------------
+                                      XXXXXXXXXX XXXXXXXXXX Xxxxxxxxxxxxxxxxxxxxxxxxxxxx
+                                      XXXXXXXXXX XXXXXXXXXX Xxxxxxxxxxxxxxxxxxxxxxxxxxxx
+                                      XXXXXXXXXX XXXXXXXXXX Xxxxxxxxxxxxxxxxxxxxxxxxxxxx
+                                      XXXXXXXXXX XXXXXXXXXX Xxxxxxxxxxxxxxxxxxxxxxxxxxxx
+                                      XXXXXXXXXX XXXXXXXXXX Xxxxxxxxxxxxxxxxxxxxxxxxxxxx
+  + panel4 - Status Log :: FormLayout
+                [ =================================> 50%                               ]
+                Xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+                xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+                xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+  + panel5 - Output Export  :: FormLayout
+                [ Filename ]        : XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+  + panel5 - Commands :: FormLayout
+             [ Execute ]  [ Copy Log ]
