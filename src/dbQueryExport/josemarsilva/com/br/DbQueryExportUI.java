@@ -122,9 +122,12 @@ public class DbQueryExportUI extends JFrame {
 					.addContainerGap(284, Short.MAX_VALUE))
 		);
 		panel_7_Commands.setLayout(new FormLayout(new ColumnSpec[] {
-				ColumnSpec.decode("50dlu"),
-				ColumnSpec.decode("50dlu"),
-				ColumnSpec.decode("50dlu"),},
+				ColumnSpec.decode("center:50dlu"),
+				ColumnSpec.decode("center:50dlu"),
+				ColumnSpec.decode("center:50dlu"),
+				ColumnSpec.decode("center:50dlu"),
+				ColumnSpec.decode("center:50dlu"),
+				ColumnSpec.decode("center:50dlu"),},
 			new RowSpec[] {
 				FormFactory.DEFAULT_ROWSPEC,}));
 		
@@ -133,6 +136,9 @@ public class DbQueryExportUI extends JFrame {
 		
 		JButton btnCopyLog = new JButton("Copy Log ...");
 		panel_7_Commands.add(btnCopyLog, "2, 1");
+		
+		JButton btnAbout = new JButton("About ...");
+		panel_7_Commands.add(btnAbout, "6, 1");
 		panel_6_ExportFilename.setLayout(new FormLayout(new ColumnSpec[] {
 				FormFactory.DEFAULT_COLSPEC,
 				ColumnSpec.decode("center:75dlu"),
