@@ -72,7 +72,7 @@ public class DbQueryExportUI extends JFrame {
 	// Args parameters ...
 	//
 	private final String ARGS_COMMAND_LINE_CLASSNAME = new String("-c");
-	private final String ARGS_COMMAND_LINE_PARAM_DATABASEURL = new String("-r");
+	private final String ARGS_COMMAND_LINE_PARAM_DATABASEURL = new String("-d");
 	private final String ARGS_COMMAND_LINE_PARAM_USERNAME = new String("-u");
 	private final String ARGS_COMMAND_LINE_PARAM_PASSWORD = new String("-p");
 	private final String ARGS_COMMAND_LINE_PARAM_SQLFILENAME = new String("-f");
@@ -83,16 +83,20 @@ public class DbQueryExportUI extends JFrame {
 	//
 	private final String MSG_INFO_COMMAND_LINE_HELP = new String("Database Query Export allows you export to a file the results of a query\n\n"
 		+ "Usage: dbQueryExport [options]\n"
-		+ "  " + ARGS_COMMAND_LINE_CLASSNAME            + "     Class name for invocation" + "\n"
-		+ "  " + ARGS_COMMAND_LINE_PARAM_DATABASEURL    + "     Database Url location for Jdbc Driver (*)" + "\n"
-		+ "  " + ARGS_COMMAND_LINE_PARAM_USERNAME       + "     Username Jdbc connection" + "\n"
-		+ "  " + ARGS_COMMAND_LINE_PARAM_PASSWORD       + "     Password Jdbc connection" + "\n"
-		+ "  " + ARGS_COMMAND_LINE_PARAM_SQLFILENAME    + "     SQL Query Filename complete path" + "\n"
-		+ "  " + ARGS_COMMAND_LINE_PARAM_EXPORTFILENAME + "     Export Filename complete path" + "\n"
-		+ "\n(*) Use <Username> and <Password> macro names to expand these command line parameters\n\n"
+		+ "    " + ARGS_COMMAND_LINE_CLASSNAME            + "     Class name for invocation" + "\n"
+		+ "    " + ARGS_COMMAND_LINE_PARAM_DATABASEURL    + "     Database Url location for Jdbc Driver (*)" + "\n"
+		+ "    " + ARGS_COMMAND_LINE_PARAM_USERNAME       + "     Username Jdbc connection" + "\n"
+		+ "    " + ARGS_COMMAND_LINE_PARAM_PASSWORD       + "     Password Jdbc connection" + "\n"
+		+ "    " + ARGS_COMMAND_LINE_PARAM_SQLFILENAME    + "     SQL Query Filename complete path" + "\n"
+		+ "    " + ARGS_COMMAND_LINE_PARAM_EXPORTFILENAME + "     Export Filename complete path" + "\n"
+		+ "\n\n"
+		+ "Examples:\n"
+		+ "    dbQueryExport.jar -c oracle.jdbc.driver.OracleDriver -d jdbc:oracle:thin:@localhost:1521:prod  -u USERNAME -p PASSWORD -f \"C:\\TEMP\\sqlquery.sql\" -o \"C:\\TEMP\\sqlquery.xls\" \n"
+		+ "    dbQueryExport.jar -c org.postgresql.Driver -d jdbc:postgresql://localhost/prod       -u USERNAME -p PASSWORD -f \"C:\\TEMP\\sqlquery.sql\" -o \"C:\\TEMP\\sqlquery.xls\" \n"
+		+ "\n\n"
 		+ "See also:\n"
-		+ "  http://github.com/josemarsilva/dbQueryExport\n"
-		+ "  http://josemarfuregattideabreusilva.blogspot.com.br\n"
+		+ "    http://github.com/josemarsilva/dbQueryExport\n"
+		+ "    http://josemarfuregattideabreusilva.blogspot.com.br\n"
 		);
 	private final String MSG_INFO_TITLE_WARNING = new String("Informação");
 	private final String MSG_WARN_TITLE_WARNING = new String("Atenção");
@@ -137,6 +141,7 @@ public class DbQueryExportUI extends JFrame {
 	// UI fields ...
 	//
 	private JPanel contentPane;
+	private JTextField txtClassname;
 	private JTextField txtDatabaseUrl;
 	private JTextField txtUsername;
 	private JPasswordField pwdPassword;
@@ -152,7 +157,6 @@ public class DbQueryExportUI extends JFrame {
 	private JButton btnAbout;
 	private JTextArea textAreaStatusMessage;
 	private JTextArea textAreaSqlQuery;
-	private JTextField txtClassname;
 
 	/**
 	 * Launch the application.
@@ -248,6 +252,7 @@ public class DbQueryExportUI extends JFrame {
 				FormFactory.DEFAULT_ROWSPEC,}));
 		
 		btnExport = new JButton("Export ...");
+		btnExport.setToolTipText("Export results from SQL Query to file ...");
 		btnExport.setIcon(new ImageIcon(DbQueryExportUI.class.getResource("/icon-services-16x16.png")));
 		btnExport.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -258,7 +263,8 @@ public class DbQueryExportUI extends JFrame {
 		btnExport.setHorizontalAlignment(SwingConstants.LEFT);
 		panel_7_Commands.add(btnExport, "1, 1");
 		
-		btnCopyStatusMessage = new JButton("Copy Msg ...");
+		btnCopyStatusMessage = new JButton("Copy msg ...");
+		btnCopyStatusMessage.setToolTipText("Copy log message to clipboard ...");
 		btnCopyStatusMessage.setIcon(new ImageIcon(DbQueryExportUI.class.getResource("/icon-copy-16x16.png")));
 		btnCopyStatusMessage.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -269,6 +275,7 @@ public class DbQueryExportUI extends JFrame {
 		panel_7_Commands.add(btnCopyStatusMessage, "2, 1");
 		
 		btnAbout = new JButton("About ...");
+		btnAbout.setToolTipText("About and command line parameters for DbQueryExport ...");
 		btnAbout.setIcon(new ImageIcon(DbQueryExportUI.class.getResource("/icon-sign-info-16x16.png")));
 		btnAbout.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -279,6 +286,12 @@ public class DbQueryExportUI extends JFrame {
 		panel_7_Commands.add(btnAbout, "3, 1");
 		
 		JButton btnExit = new JButton("Exit");
+		btnExit.setToolTipText("Exit application ...");
+		btnExit.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				actionListenerExitApp();
+			}
+		});
 		btnExit.setIcon(new ImageIcon(DbQueryExportUI.class.getResource("/icon-exit-1-16x16.png")));
 		panel_7_Commands.add(btnExit, "4, 1");
 		panel_6_ExportFilename.setLayout(new FormLayout(new ColumnSpec[] {
@@ -289,6 +302,7 @@ public class DbQueryExportUI extends JFrame {
 				FormFactory.DEFAULT_ROWSPEC,}));
 		
 		btnExportFile = new JButton("Export File ...");
+		btnExportFile.setToolTipText("Define export file ...");
 		btnExportFile.setIcon(new ImageIcon(DbQueryExportUI.class.getResource("/icon-save-16x16.png")));
 		btnExportFile.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -341,6 +355,7 @@ public class DbQueryExportUI extends JFrame {
 		panel_4_SqlParams.add(canvas, "1, 1");
 		
 		btnSqlParams = new JButton("SQL Params");
+		btnSqlParams.setToolTipText("Extract SQL Params from SQL Query ...");
 		btnSqlParams.setIcon(new ImageIcon(DbQueryExportUI.class.getResource("/icon-table-arrow-16x16.png")));
 		btnSqlParams.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -378,6 +393,7 @@ public class DbQueryExportUI extends JFrame {
 				FormFactory.DEFAULT_ROWSPEC,}));
 		
 		btnSqlFilename = new JButton("SQL Query Filename");
+		btnSqlFilename.setToolTipText("Open SQL Query file ...");
 		btnSqlFilename.setIcon(new ImageIcon(DbQueryExportUI.class.getResource("/icon-open-folder-16x16.png")));
 		btnSqlFilename.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -409,7 +425,6 @@ public class DbQueryExportUI extends JFrame {
 		panel_1_Connection.add(lblClassName, "2, 1, center, default");
 		
 		txtClassname = new JTextField();
-		txtClassname.setEditable(false);
 		panel_1_Connection.add(txtClassname, "3, 1, fill, default");
 		txtClassname.setColumns(10);
 		
@@ -420,7 +435,6 @@ public class DbQueryExportUI extends JFrame {
 		panel_1_Connection.add(lblDatabaseUrl, "2, 2, center, default");
 		
 		txtDatabaseUrl = new JTextField();
-		txtDatabaseUrl.setEditable(false);
 		txtDatabaseUrl.setToolTipText("Database Url");
 		panel_1_Connection.add(txtDatabaseUrl, "3, 2, fill, default");
 		txtDatabaseUrl.setColumns(10);
@@ -432,7 +446,6 @@ public class DbQueryExportUI extends JFrame {
 		panel_1_Connection.add(lblUsername, "2, 3, center, default");
 		
 		txtUsername = new JTextField();
-		txtUsername.setEditable(false);
 		txtUsername.setToolTipText("Username");
 		panel_1_Connection.add(txtUsername, "3, 3, fill, default");
 		txtUsername.setColumns(10);
@@ -444,7 +457,6 @@ public class DbQueryExportUI extends JFrame {
 		panel_1_Connection.add(lblPassword, "2, 4, center, default");
 		
 		pwdPassword = new JPasswordField();
-		pwdPassword.setEditable(false);
 		pwdPassword.setToolTipText("Password");
 		panel_1_Connection.add(pwdPassword, "3, 4, fill, default");
 		contentPane.setLayout(gl_contentPane);
@@ -515,6 +527,15 @@ public class DbQueryExportUI extends JFrame {
 		
 	}
 
+	protected void actionListenerExitApp() {
+		//
+		// ExitApp ...
+		//
+		System.exit(0);
+		
+	}
+
+	
 	protected void actionListenerSqlFilenameSelect() {
 		//
 		// Select Sql Filename  ..
@@ -573,8 +594,8 @@ public class DbQueryExportUI extends JFrame {
 			statusMessageAddMsg("Step #3: Open new JDBC connection ...");
 			statusMessageAddMsg("  - Class.forName(" + txtClassname.getText() + ")" );
 			Class.forName(txtClassname.getText());
-			statusMessageAddMsg("  - DriverManager.getConnection(" + txtDatabaseUrl.getText() + ")" );
-			conn = DriverManager.getConnection(txtDatabaseUrl.getText());
+			statusMessageAddMsg("  - DriverManager.getConnection(" + txtDatabaseUrl.getText() + "," + "," + ")" );
+			conn = DriverManager.getConnection(txtDatabaseUrl.getText(),txtUsername.getText(),pwdPassword.getText());
 			int rowCount = 0;
 
 			//
@@ -759,11 +780,9 @@ public class DbQueryExportUI extends JFrame {
 		}
 		if ( !(mapArgs.get(ARGS_COMMAND_LINE_PARAM_USERNAME)==null) ) {
 			txtUsername.setText(mapArgs.get(ARGS_COMMAND_LINE_PARAM_USERNAME));
-			txtDatabaseUrl.setText( txtDatabaseUrl.getText().replace("<Username>", txtUsername.getText()) );
 		}
 		if ( !(mapArgs.get(ARGS_COMMAND_LINE_PARAM_PASSWORD)==null) ) {
 			pwdPassword.setText(mapArgs.get(ARGS_COMMAND_LINE_PARAM_PASSWORD));
-			txtDatabaseUrl.setText( txtDatabaseUrl.getText().replace("<Password>", pwdPassword.getText()) );
 		}
 		if ( !(mapArgs.get(ARGS_COMMAND_LINE_PARAM_SQLFILENAME)==null) ) {
 			txtSqlFilename.setText(mapArgs.get(ARGS_COMMAND_LINE_PARAM_SQLFILENAME));
@@ -869,7 +888,6 @@ public class DbQueryExportUI extends JFrame {
 		//
 		// Disable all user entries during processing ...
 		//
-//		txtJdbcDriver.setEnabled(true);
 		txtClassname.setEnabled(true);
 		txtDatabaseUrl.setEnabled(true);
 		txtUsername.setEnabled(true);
