@@ -1,6 +1,7 @@
 package dbQueryExport.josemarsilva.com.br;
 
 import java.awt.BorderLayout;
+import java.awt.Cursor;
 import java.awt.EventQueue;
 import java.awt.Toolkit;
 
@@ -57,6 +58,7 @@ import javax.swing.border.BevelBorder;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EtchedBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.swing.table.DefaultTableModel;
 import javax.swing.SwingConstants;
 import javax.swing.JScrollPane;
 
@@ -65,9 +67,14 @@ import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
+
 import javax.swing.ImageIcon;
 
 public class DbQueryExportUI extends JFrame {
+	//
+	// Version and build ...
+	//
+	private final String APP_VERSION = new String("v1.02.20150531");
 	//
 	// Args parameters ...
 	//
@@ -91,12 +98,12 @@ public class DbQueryExportUI extends JFrame {
 		+ "    " + ARGS_COMMAND_LINE_PARAM_EXPORTFILENAME + "     Export Filename complete path" + "\n"
 		+ "\n\n"
 		+ "Examples:\n"
-		+ "    dbQueryExport.jar -c oracle.jdbc.driver.OracleDriver -d jdbc:oracle:thin:@localhost:1521:prod  -u USERNAME -p PASSWORD -f \"C:\\TEMP\\sqlquery.sql\" -o \"C:\\TEMP\\sqlquery.xls\" \n"
-		+ "    dbQueryExport.jar -c org.postgresql.Driver -d jdbc:postgresql://localhost/prod       -u USERNAME -p PASSWORD -f \"C:\\TEMP\\sqlquery.sql\" -o \"C:\\TEMP\\sqlquery.xls\" \n"
+		+ "    dbQueryExport.jar -c oracle.jdbc.driver.OracleDriver -d jdbc:oracle:thin:@localhost:1521:dbname -u username -p password -f \"C:\\TEMP\\sqlquery.sql\" -o \"C:\\TEMP\\sqlquery.xls\" \n"
+		+ "    dbQueryExport.jar -c org.postgresql.Driver -d jdbc:postgresql://localhost/dbname -u username -p password -f \"C:\\TEMP\\sqlquery.sql\" -o \"C:\\TEMP\\sqlquery.xls\" \n"
+		+ "    dbQueryExport.jar -c com.mysql.jdbc.Driver -d jdbc:mysql://localhost:3306/dbname -u username -p password -f \"C:\\TEMP\\sqlquery.sql\" -o \"C:\\TEMP\\sqlquery.xls\" \n"
 		+ "\n\n"
 		+ "See also:\n"
 		+ "    http://github.com/josemarsilva/dbQueryExport\n"
-		+ "    http://josemarfuregattideabreusilva.blogspot.com.br\n"
 		);
 	private final String MSG_INFO_TITLE_WARNING = new String("Informação");
 	private final String MSG_WARN_TITLE_WARNING = new String("Atenção");
@@ -105,7 +112,12 @@ public class DbQueryExportUI extends JFrame {
 	private final String MSG_INFO_EXECUTION_SUCCESS = new String("Execução concluída com sucesso!");	
 	private final String MSG_WARN_EXECUTION_FAILED = new String("Execução concluída com falha!\n Exceção %s");
 	private final String MSG_WARN_NOTFOUND = new String("Arquivo '%s' não existe ou não pode ser aberto para leitura!");
-	private final String MSG_WARN_OUTPUTFILE_MISSING = new String("Arquivo de exportação do resultado da Query não foi definido!"); 
+	private final String MSG_CHECK_CLASSNAME_MISSING = new String("Campo 'Jdbc Class Name' não foi preenchido!"); 
+	private final String MSG_CHECK_DATABASEURL_MISSING = new String("Campo 'Database Url' não foi preenchido!"); 
+	private final String MSG_CHECK_USERNAME_MISSING = new String("Campo 'Username' não foi preenchido!"); 
+	private final String MSG_CHECK_PASSWORD_MISSING = new String("Campo 'Password' não foi preenchido!"); 
+	private final String MSG_CHECK_SQLQUERY_MISSING = new String("Campo 'SQL Query' não foi preenchido!"); 
+	private final String MSG_CHECK_EXPORTFILE_MISSING = new String("Campo 'Export File' não foi preenchido!"); 
 
 	
 	//
@@ -119,8 +131,6 @@ public class DbQueryExportUI extends JFrame {
 	//
 	// Filename and extensions ...
 	//
-	private final String FILENAMEEXTENSIONFILTER_JAR = new String("jar");
-	private final String FILENAMEEXTENSIONFILTER_JAR_TITLE = new String("JDBC Driver");
 	private final String FILENAMEEXTENSIONFILTER_SQL = new String("sql");
 	private final String FILENAMEEXTENSIONFILTER_SQL_TITLE = new String("SQL Query");
 	private final String FILENAMEEXTENSIONFILTER_XLS = new String("xls");
@@ -146,6 +156,7 @@ public class DbQueryExportUI extends JFrame {
 	private JTextField txtUsername;
 	private JPasswordField pwdPassword;
 	private JTextField txtSqlFilename;
+	private DefaultTableModel tableModelSqlParams;
 	private JTable tableSqlParams;
 	private JTextField txtExportFile;
 	private JButton btnSqlFilename;
@@ -157,6 +168,7 @@ public class DbQueryExportUI extends JFrame {
 	private JButton btnAbout;
 	private JTextArea textAreaStatusMessage;
 	private JTextArea textAreaSqlQuery;
+	private JScrollPane scrollPane;
 
 	/**
 	 * Launch the application.
@@ -182,9 +194,9 @@ public class DbQueryExportUI extends JFrame {
 	 * Create the frame.
 	 */
 	public DbQueryExportUI() {
-		setTitle("DbQueryExport v1.00.a");
+		setTitle("DbQueryExport - "+ APP_VERSION);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 600, 600);
+		setBounds(100, 100, 600, 569);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
@@ -195,52 +207,13 @@ public class DbQueryExportUI extends JFrame {
 		JPanel panel_2_SqlQueryFilename = new JPanel();
 		panel_2_SqlQueryFilename.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
 		
-		JPanel panel_3_SqlQuery = new JPanel();
-		panel_3_SqlQuery.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
-		
-		JPanel panel_4_SqlParams = new JPanel();
-		panel_4_SqlParams.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
-		
-		JPanel panel_5_StatusMessage = new JPanel();
-		panel_5_StatusMessage.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
-		
 		JPanel panel_6_ExportFilename = new JPanel();
 		panel_6_ExportFilename.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
 		
 		JPanel panel_7_Commands = new JPanel();
 		panel_7_Commands.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
-		GroupLayout gl_contentPane = new GroupLayout(contentPane);
-		gl_contentPane.setHorizontalGroup(
-			gl_contentPane.createParallelGroup(Alignment.LEADING)
-				.addGroup(gl_contentPane.createSequentialGroup()
-					.addGroup(gl_contentPane.createParallelGroup(Alignment.LEADING)
-						.addComponent(panel_2_SqlQueryFilename, GroupLayout.PREFERRED_SIZE, 576, GroupLayout.PREFERRED_SIZE)
-						.addComponent(panel_4_SqlParams, GroupLayout.PREFERRED_SIZE, 579, GroupLayout.PREFERRED_SIZE)
-						.addComponent(panel_5_StatusMessage, GroupLayout.PREFERRED_SIZE, 579, GroupLayout.PREFERRED_SIZE)
-						.addComponent(panel_6_ExportFilename, GroupLayout.PREFERRED_SIZE, 578, GroupLayout.PREFERRED_SIZE)
-						.addComponent(panel_7_Commands, GroupLayout.PREFERRED_SIZE, 577, GroupLayout.PREFERRED_SIZE)
-						.addComponent(panel_3_SqlQuery, GroupLayout.PREFERRED_SIZE, 577, GroupLayout.PREFERRED_SIZE)
-						.addComponent(panel_1_Connection, GroupLayout.PREFERRED_SIZE, 576, GroupLayout.PREFERRED_SIZE))
-					.addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-		);
-		gl_contentPane.setVerticalGroup(
-			gl_contentPane.createParallelGroup(Alignment.LEADING)
-				.addGroup(gl_contentPane.createSequentialGroup()
-					.addComponent(panel_1_Connection, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-					.addGap(5)
-					.addComponent(panel_2_SqlQueryFilename, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-					.addPreferredGap(ComponentPlacement.RELATED)
-					.addComponent(panel_3_SqlQuery, GroupLayout.PREFERRED_SIZE, 88, GroupLayout.PREFERRED_SIZE)
-					.addPreferredGap(ComponentPlacement.RELATED)
-					.addComponent(panel_4_SqlParams, GroupLayout.PREFERRED_SIZE, 85, GroupLayout.PREFERRED_SIZE)
-					.addPreferredGap(ComponentPlacement.RELATED)
-					.addComponent(panel_5_StatusMessage, GroupLayout.PREFERRED_SIZE, 118, GroupLayout.PREFERRED_SIZE)
-					.addPreferredGap(ComponentPlacement.RELATED)
-					.addComponent(panel_6_ExportFilename, GroupLayout.PREFERRED_SIZE, 32, GroupLayout.PREFERRED_SIZE)
-					.addPreferredGap(ComponentPlacement.RELATED)
-					.addComponent(panel_7_Commands, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-					.addContainerGap(32, Short.MAX_VALUE))
-		);
+		
+		JScrollPane scrollPane_4_SqlParams = new JScrollPane();
 		panel_7_Commands.setLayout(new FormLayout(new ColumnSpec[] {
 				ColumnSpec.decode("left:50dlu"),
 				ColumnSpec.decode("left:50dlu"),
@@ -256,7 +229,9 @@ public class DbQueryExportUI extends JFrame {
 		btnExport.setIcon(new ImageIcon(DbQueryExportUI.class.getResource("/icon-services-16x16.png")));
 		btnExport.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				actionListenerExportExecute();
+				if (checkUserEntries()) {
+					actionListenerExportExecute();
+				}
 			}
 
 		});
@@ -317,74 +292,10 @@ public class DbQueryExportUI extends JFrame {
 		panel_6_ExportFilename.add(txtExportFile, "3, 1, fill, default");
 		txtExportFile.setColumns(10);
 		
-		progressBarLog = new JProgressBar();
-		
-		JScrollPane scrollPane = new JScrollPane();
-		GroupLayout gl_panel_5_StatusMessage = new GroupLayout(panel_5_StatusMessage);
-		gl_panel_5_StatusMessage.setHorizontalGroup(
-			gl_panel_5_StatusMessage.createParallelGroup(Alignment.LEADING)
-				.addGroup(gl_panel_5_StatusMessage.createSequentialGroup()
-					.addGap(10)
-					.addGroup(gl_panel_5_StatusMessage.createParallelGroup(Alignment.LEADING)
-						.addComponent(scrollPane, GroupLayout.PREFERRED_SIZE, 555, GroupLayout.PREFERRED_SIZE)
-						.addComponent(progressBarLog, GroupLayout.PREFERRED_SIZE, 555, GroupLayout.PREFERRED_SIZE))
-					.addContainerGap())
-		);
-		gl_panel_5_StatusMessage.setVerticalGroup(
-			gl_panel_5_StatusMessage.createParallelGroup(Alignment.LEADING)
-				.addGroup(gl_panel_5_StatusMessage.createSequentialGroup()
-					.addGap(11)
-					.addComponent(progressBarLog, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-					.addPreferredGap(ComponentPlacement.RELATED)
-					.addComponent(scrollPane, GroupLayout.DEFAULT_SIZE, 77, Short.MAX_VALUE)
-					.addContainerGap())
-		);
-		
-		textAreaStatusMessage = new JTextArea();
-		textAreaStatusMessage.setEditable(false);
-		scrollPane.setViewportView(textAreaStatusMessage);
-		panel_5_StatusMessage.setLayout(gl_panel_5_StatusMessage);
-		panel_4_SqlParams.setLayout(new FormLayout(new ColumnSpec[] {
-				FormFactory.DEFAULT_COLSPEC,
-				ColumnSpec.decode("center:75dlu"),
-				ColumnSpec.decode("left:275dlu:grow"),},
-			new RowSpec[] {
-				RowSpec.decode("top:50dlu:grow"),}));
-		
-		Canvas canvas = new Canvas();
-		panel_4_SqlParams.add(canvas, "1, 1");
-		
-		btnSqlParams = new JButton("SQL Params");
-		btnSqlParams.setToolTipText("Extract SQL Params from SQL Query ...");
-		btnSqlParams.setIcon(new ImageIcon(DbQueryExportUI.class.getResource("/icon-table-arrow-16x16.png")));
-		btnSqlParams.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				actionListenerSqlParamsExtract();
-			}
-		});
-		panel_4_SqlParams.add(btnSqlParams, "2, 1");
-		
-		tableSqlParams = new JTable();
-		panel_4_SqlParams.add(tableSqlParams, "3, 1, fill, fill");
-		panel_3_SqlQuery.setLayout(new FormLayout(new ColumnSpec[] {
-				FormFactory.DEFAULT_COLSPEC,
-				ColumnSpec.decode("center:75dlu"),
-				ColumnSpec.decode("left:250dlu:grow"),},
-			new RowSpec[] {
-				RowSpec.decode("default:grow"),}));
-		
-		Canvas canvas_SqlQuery = new Canvas();
-		panel_3_SqlQuery.add(canvas_SqlQuery, "1, 1");
-		
-		JLabel lblSqlQuery = new JLabel("SQL Query");
-		panel_3_SqlQuery.add(lblSqlQuery, "2, 1");
-		
-		JScrollPane scrollPane_SqlQuery = new JScrollPane();
-		panel_3_SqlQuery.add(scrollPane_SqlQuery, "3, 1, fill, fill");
-		
-		textAreaSqlQuery = new JTextArea();
-		scrollPane_SqlQuery.setViewportView(textAreaSqlQuery);
-		textAreaSqlQuery.setFont(new Font("Monospaced", Font.PLAIN, 9));
+		tableModelSqlParams = new DefaultTableModel(); 
+		tableModelSqlParams.addColumn(COLUMNTITLE_PARAM);
+		tableModelSqlParams.addColumn(COLUMNTITLE_VALUE);
+		tableModelSqlParams.addColumn(COLUMNTITLE_OBS);
 		panel_2_SqlQueryFilename.setLayout(new FormLayout(new ColumnSpec[] {
 				FormFactory.DEFAULT_COLSPEC,
 				ColumnSpec.decode("center:75dlu"),
@@ -459,6 +370,83 @@ public class DbQueryExportUI extends JFrame {
 		pwdPassword = new JPasswordField();
 		pwdPassword.setToolTipText("Password");
 		panel_1_Connection.add(pwdPassword, "3, 4, fill, default");
+		
+		JScrollPane scrollPane_3_SqlQuery = new JScrollPane();
+		scrollPane_3_SqlQuery.setViewportBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
+		
+		scrollPane = new JScrollPane();
+		
+		btnSqlParams = new JButton("SQL Params");
+		scrollPane_4_SqlParams.setRowHeaderView(btnSqlParams);
+		btnSqlParams.setToolTipText("Extract SQL Params from SQL Query ...");
+		btnSqlParams.setIcon(new ImageIcon(DbQueryExportUI.class.getResource("/icon-table-arrow-16x16.png")));
+		tableSqlParams = new JTable();
+		scrollPane_4_SqlParams.setViewportView(tableSqlParams);
+		btnSqlParams.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				actionListenerSqlParamsExtract();
+			}
+		});
+		
+		JLabel lblSqlQuery = new JLabel("SQL Query ");
+		scrollPane_3_SqlQuery.setRowHeaderView(lblSqlQuery);
+		
+		textAreaSqlQuery = new JTextArea();
+		scrollPane_3_SqlQuery.setViewportView(textAreaSqlQuery);
+		textAreaSqlQuery.setFont(new Font("Monospaced", Font.PLAIN, 9));
+		GroupLayout gl_contentPane = new GroupLayout(contentPane);
+		gl_contentPane.setHorizontalGroup(
+			gl_contentPane.createParallelGroup(Alignment.LEADING)
+				.addGroup(gl_contentPane.createSequentialGroup()
+					.addGroup(gl_contentPane.createParallelGroup(Alignment.LEADING)
+						.addGroup(gl_contentPane.createSequentialGroup()
+							.addGap(13)
+							.addComponent(panel_1_Connection, GroupLayout.PREFERRED_SIZE, 566, GroupLayout.PREFERRED_SIZE))
+						.addGroup(gl_contentPane.createSequentialGroup()
+							.addGap(10)
+							.addComponent(panel_2_SqlQueryFilename, GroupLayout.PREFERRED_SIZE, 569, GroupLayout.PREFERRED_SIZE))
+						.addGroup(gl_contentPane.createSequentialGroup()
+							.addGap(10)
+							.addComponent(scrollPane_3_SqlQuery, GroupLayout.PREFERRED_SIZE, 561, GroupLayout.PREFERRED_SIZE))
+						.addGroup(gl_contentPane.createSequentialGroup()
+							.addGap(11)
+							.addComponent(scrollPane_4_SqlParams, GroupLayout.PREFERRED_SIZE, 568, GroupLayout.PREFERRED_SIZE))
+						.addGroup(gl_contentPane.createSequentialGroup()
+							.addGap(11)
+							.addComponent(panel_6_ExportFilename, GroupLayout.PREFERRED_SIZE, 568, GroupLayout.PREFERRED_SIZE))
+						.addGroup(gl_contentPane.createSequentialGroup()
+							.addGap(12)
+							.addComponent(panel_7_Commands, GroupLayout.PREFERRED_SIZE, 577, GroupLayout.PREFERRED_SIZE))
+						.addGroup(gl_contentPane.createSequentialGroup()
+							.addContainerGap()
+							.addComponent(scrollPane, GroupLayout.PREFERRED_SIZE, 569, GroupLayout.PREFERRED_SIZE)))
+					.addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+		);
+		gl_contentPane.setVerticalGroup(
+			gl_contentPane.createParallelGroup(Alignment.LEADING)
+				.addGroup(gl_contentPane.createSequentialGroup()
+					.addComponent(panel_1_Connection, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+					.addGap(6)
+					.addComponent(panel_2_SqlQueryFilename, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+					.addGap(6)
+					.addComponent(scrollPane_3_SqlQuery, GroupLayout.PREFERRED_SIZE, 91, GroupLayout.PREFERRED_SIZE)
+					.addGap(11)
+					.addComponent(scrollPane_4_SqlParams, GroupLayout.PREFERRED_SIZE, 86, GroupLayout.PREFERRED_SIZE)
+					.addPreferredGap(ComponentPlacement.RELATED)
+					.addComponent(scrollPane, GroupLayout.PREFERRED_SIZE, 117, GroupLayout.PREFERRED_SIZE)
+					.addPreferredGap(ComponentPlacement.RELATED)
+					.addComponent(panel_6_ExportFilename, GroupLayout.PREFERRED_SIZE, 32, GroupLayout.PREFERRED_SIZE)
+					.addGap(6)
+					.addComponent(panel_7_Commands, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+					.addGap(51))
+		);
+		
+		progressBarLog = new JProgressBar();
+		scrollPane.setColumnHeaderView(progressBarLog);
+		
+		textAreaStatusMessage = new JTextArea();
+		scrollPane.setViewportView(textAreaStatusMessage);
+		textAreaStatusMessage.setEditable(false);
 		contentPane.setLayout(gl_contentPane);
 		
 		//
@@ -523,8 +511,13 @@ public class DbQueryExportUI extends JFrame {
 	}
 
 	protected void actionListenerSqlParamsExtract() {
-		// TODO Auto-generated method stub
-		
+		//
+		// Extract parameters from SQL ...
+		//
+		tableModelSqlParams.addRow(new Object[]{"r1c1", "r1c2","r1c3"});
+		tableModelSqlParams.addRow(new Object[]{"r2c1", "r2c2","r2c3"});
+		tableModelSqlParams.addRow(new Object[]{"r3c1", "r3c2","r3c3"});
+
 	}
 
 	protected void actionListenerExitApp() {
@@ -560,7 +553,8 @@ public class DbQueryExportUI extends JFrame {
 		
 	}
 	
-	protected void actionListenerExportExecute() {
+	@SuppressWarnings("deprecation")
+	protected void actionListenerExportExecute() {		
 		//
 		// Step #1: Lock fields for user entries ...
 		//
@@ -594,7 +588,7 @@ public class DbQueryExportUI extends JFrame {
 			statusMessageAddMsg("Step #3: Open new JDBC connection ...");
 			statusMessageAddMsg("  - Class.forName(" + txtClassname.getText() + ")" );
 			Class.forName(txtClassname.getText());
-			statusMessageAddMsg("  - DriverManager.getConnection(" + txtDatabaseUrl.getText() + "," + "," + ")" );
+			statusMessageAddMsg("  - DriverManager.getConnection(" + txtDatabaseUrl.getText() + "," + txtUsername.getText() + ", ********" + ")" );
 			conn = DriverManager.getConnection(txtDatabaseUrl.getText(),txtUsername.getText(),pwdPassword.getText());
 			int rowCount = 0;
 
@@ -646,7 +640,7 @@ public class DbQueryExportUI extends JFrame {
 				//
 				// Status set progress() ...
 				//
-				statusSetProgress(rowCurrent/rowCount);
+				statusSetProgress(rowCurrent/rowCount*100);
 				
 				//
 				// If row < 65636 Then ...
@@ -820,7 +814,7 @@ public class DbQueryExportUI extends JFrame {
 	 * statusSetProgress() 
 	 */
 	public void statusSetProgress(int n) {
-		if (n >= 0 & n <=100 ) {
+		if (n >= 0 && n <=100 ) {
 			progressBarLog.setValue(n);
 			progressBarLog.updateUI();
 		}
@@ -856,6 +850,68 @@ public class DbQueryExportUI extends JFrame {
 		//
 		initUIFieldsFromArgs();
 		
+		//
+		// JTable initialization ...
+		//
+//		tableSqlParams.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+		tableModelSqlParams.addColumn(COLUMNTITLE_PARAM);
+		tableModelSqlParams.addColumn(COLUMNTITLE_VALUE);
+		tableModelSqlParams.addColumn(COLUMNTITLE_OBS);
+//		tableSqlParams.getColumnModel().getColumn(0).setPreferredWidth(180);
+//		tableSqlParams.getColumnModel().getColumn(1).setPreferredWidth(700);
+//		tableSqlParams.getColumnModel().getColumn(2).setPreferredWidth(180);
+		
+		
+	}
+	
+	/*
+	 * checkUserEntries()
+	 */
+	private boolean checkUserEntries() {
+		//
+		// Check JdbcClass, DatabaseUrl, Username and Password 
+		//
+		if (txtClassname.getText().equals("")) {
+			JOptionPane.showMessageDialog(getParent(),
+					MSG_CHECK_CLASSNAME_MISSING, MSG_CRITICAL_TITLE_WARNING,
+					JOptionPane.ERROR_MESSAGE);
+			return false;
+		}
+		if (txtDatabaseUrl.getText().equals("")) {
+			JOptionPane.showMessageDialog(getParent(),
+					MSG_CHECK_DATABASEURL_MISSING, MSG_CRITICAL_TITLE_WARNING,
+					JOptionPane.ERROR_MESSAGE);
+			return false;
+		}
+		if (txtUsername.getText().equals("")) {
+			JOptionPane.showMessageDialog(getParent(),
+					MSG_CHECK_USERNAME_MISSING, MSG_CRITICAL_TITLE_WARNING,
+					JOptionPane.ERROR_MESSAGE);
+			return false;
+		}
+		if (pwdPassword.getText().equals("")) {
+			JOptionPane.showMessageDialog(getParent(),
+					MSG_CHECK_PASSWORD_MISSING, MSG_CRITICAL_TITLE_WARNING,
+					JOptionPane.ERROR_MESSAGE);
+			return false;
+		}
+		if (textAreaSqlQuery.getText().equals("")) {
+			JOptionPane.showMessageDialog(getParent(),
+					MSG_CHECK_SQLQUERY_MISSING, MSG_CRITICAL_TITLE_WARNING,
+					JOptionPane.ERROR_MESSAGE);
+			return false;
+		}
+		if (txtExportFile.getText().equals("")) {
+			JOptionPane.showMessageDialog(getParent(),
+					MSG_CHECK_EXPORTFILE_MISSING, MSG_CRITICAL_TITLE_WARNING,
+					JOptionPane.ERROR_MESSAGE);
+			return false;
+		}
+		
+		//
+		// Return required ...
+		//
+		return true;
 	}
 
 	/**
@@ -879,6 +935,11 @@ public class DbQueryExportUI extends JFrame {
 		btnCopyStatusMessage.setEnabled(false);
 		btnAbout.setEnabled(false);
 		
+		//
+		// Cursor waiting ...
+		//
+		this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+		
 	}
 	
 	/**
@@ -901,6 +962,11 @@ public class DbQueryExportUI extends JFrame {
 		btnExport.setEnabled(true);
 		btnCopyStatusMessage.setEnabled(true);
 		btnAbout.setEnabled(true);
+		
+		//
+		// Cursor waiting ...
+		//
+		this.setCursor(Cursor.getDefaultCursor());
 		
 	}
 }
