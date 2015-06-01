@@ -32,12 +32,12 @@ Usage: dbQueryExport [options]
 
 
 Examples:
-    dbQueryExport.jar -c oracle.jdbc.driver.OracleDriver -d jdbc:oracle:thin:@localhost:1521:dbname -u username -p password -f \"C:\\TEMP\\sqlquery.sql\" -o \"C:\\TEMP\\sqlquery.xls\"
-    dbQueryExport.jar -c org.postgresql.Driver -d jdbc:postgresql://localhost/dbname -u username -p password -f \"C:\\TEMP\\sqlquery.sql\" -o \"C:\\TEMP\\sqlquery.xls\"
-    dbQueryExport.jar -c com.mysql.jdbc.Driver -d jdbc:mysql://localhost:3306/dbname -u username -p password -f \"C:\\TEMP\\sqlquery.sql\" -o \"C:\\TEMP\\sqlquery.xls\"
+    dbQueryExport.jar -c oracle.jdbc.driver.OracleDriver -d jdbc:oracle:thin:@localhost:1521:dbname -u username -p password -f "C:\TEMP\sqlquery.sql" -o "C:\TEMP\sqlquery.xls"
+    dbQueryExport.jar -c org.postgresql.Driver -d jdbc:postgresql://localhost/dbname -u username -p password -f "C:\TEMP\sqlquery.sql" -o "C:\TEMP\sqlquery.xls"
+    dbQueryExport.jar -c com.mysql.jdbc.Driver -d jdbc:mysql://localhost:3306/dbname -u username -p password -f "C:\TEMP\sqlquery.sql" -o "C:\TEMP\sqlquery.xls"
 
 See also:
-    http://github.com/josemarsilva/dbQueryExport\n"
+    http://github.com/josemarsilva/dbQueryExport"
 ```
 
 # Checking out from Git
@@ -51,4 +51,4 @@ $ git checkout gh-pages
 
 
 # License
-Free software Yeah !!!
+Yes! It is a **Free** software with open source, Yeah !!!
