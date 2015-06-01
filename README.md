@@ -1,10 +1,7 @@
-# dbQueryExport
-Database Query Export
-
-# Welcome to DbQueryExport project
+# Welcome dbQueryExport
 **DbQueryExport** (Database Query Export) allows you export to a file the results of a query. 
 
-# For what is DbQueryExport?
+# What is DbQueryExport for?
 
 **DbQueryExport** is usefull tool to your final end user that does not know SQL, but frequently issues you need of information from your systems. Usually final end user needs the result of a query execution exported in a Excel file. Using **DbQueryExport**, you can customize command line arguments to pre-setting some options for your end user, like database connection, path-to-sqlfile, etc. And finally, you can create shortcut icons with these command line arguments.
 
