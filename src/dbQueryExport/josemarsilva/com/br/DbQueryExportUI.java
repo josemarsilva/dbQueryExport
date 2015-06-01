@@ -1,6 +1,7 @@
 package dbQueryExport.josemarsilva.com.br;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.EventQueue;
 import java.awt.Toolkit;
@@ -69,12 +70,14 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 
 import javax.swing.ImageIcon;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 
 public class DbQueryExportUI extends JFrame {
 	//
 	// Version and build ...
 	//
-	private final String APP_VERSION = new String("v1.02.20150531");
+	private final String APP_VERSION = new String("v1.02.20150531b");
 	//
 	// Args parameters ...
 	//
@@ -91,7 +94,7 @@ public class DbQueryExportUI extends JFrame {
 	private final String MSG_INFO_COMMAND_LINE_HELP = new String("Database Query Export allows you export to a file the results of a query\n\n"
 		+ "Usage: dbQueryExport [options]\n"
 		+ "    " + ARGS_COMMAND_LINE_CLASSNAME            + "     Class name for invocation" + "\n"
-		+ "    " + ARGS_COMMAND_LINE_PARAM_DATABASEURL    + "     Database Url location for Jdbc Driver (*)" + "\n"
+		+ "    " + ARGS_COMMAND_LINE_PARAM_DATABASEURL    + "     Database Url location for Jdbc Driver" + "\n"
 		+ "    " + ARGS_COMMAND_LINE_PARAM_USERNAME       + "     Username Jdbc connection" + "\n"
 		+ "    " + ARGS_COMMAND_LINE_PARAM_PASSWORD       + "     Password Jdbc connection" + "\n"
 		+ "    " + ARGS_COMMAND_LINE_PARAM_SQLFILENAME    + "     SQL Query Filename complete path" + "\n"
@@ -169,6 +172,11 @@ public class DbQueryExportUI extends JFrame {
 	private JTextArea textAreaStatusMessage;
 	private JTextArea textAreaSqlQuery;
 	private JScrollPane scrollPane;
+	private JLabel lblClassName;
+	private JLabel lblDatabaseUrl;
+	private JLabel lblUsername;
+	private JLabel lblPassword;
+	private JLabel lblSqlQuery;
 
 	/**
 	 * Launch the application.
@@ -332,20 +340,32 @@ public class DbQueryExportUI extends JFrame {
 		Canvas canvas_JdbcDriver = new Canvas();
 		panel_1_Connection.add(canvas_JdbcDriver, "1, 1");
 		
-		JLabel lblClassName = new JLabel("Jdbc Class Name");
+		lblClassName = new JLabel("Jdbc Class Name");
 		panel_1_Connection.add(lblClassName, "2, 1, center, default");
 		
 		txtClassname = new JTextField();
+		txtClassname.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyPressed(KeyEvent arg0) {
+				refreshEditChange("txtClassname");
+			}
+		});
 		panel_1_Connection.add(txtClassname, "3, 1, fill, default");
 		txtClassname.setColumns(10);
 		
 		Canvas canvas_DatabaseUrl = new Canvas();
 		panel_1_Connection.add(canvas_DatabaseUrl, "1, 2");
 		
-		JLabel lblDatabaseUrl = new JLabel("Database Url");
+		lblDatabaseUrl = new JLabel("Database Url");
 		panel_1_Connection.add(lblDatabaseUrl, "2, 2, center, default");
 		
 		txtDatabaseUrl = new JTextField();
+		txtDatabaseUrl.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyPressed(KeyEvent e) {
+				refreshEditChange("txtDatabaseUrl");
+			}
+		});
 		txtDatabaseUrl.setToolTipText("Database Url");
 		panel_1_Connection.add(txtDatabaseUrl, "3, 2, fill, default");
 		txtDatabaseUrl.setColumns(10);
@@ -353,10 +373,16 @@ public class DbQueryExportUI extends JFrame {
 		Canvas canvas_Username = new Canvas();
 		panel_1_Connection.add(canvas_Username, "1, 3");
 		
-		JLabel lblUsername = new JLabel("Username");
+		lblUsername = new JLabel("Username");
 		panel_1_Connection.add(lblUsername, "2, 3, center, default");
 		
 		txtUsername = new JTextField();
+		txtUsername.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyPressed(KeyEvent e) {
+				refreshEditChange("txtUsername");
+			}
+		});
 		txtUsername.setToolTipText("Username");
 		panel_1_Connection.add(txtUsername, "3, 3, fill, default");
 		txtUsername.setColumns(10);
@@ -364,10 +390,16 @@ public class DbQueryExportUI extends JFrame {
 		Canvas canvas_Password = new Canvas();
 		panel_1_Connection.add(canvas_Password, "1, 4");
 		
-		JLabel lblPassword = new JLabel("Password");
+		lblPassword = new JLabel("Password");
 		panel_1_Connection.add(lblPassword, "2, 4, center, default");
 		
 		pwdPassword = new JPasswordField();
+		pwdPassword.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyPressed(KeyEvent e) {
+				refreshEditChange("pwdPassword");
+			}
+		});
 		pwdPassword.setToolTipText("Password");
 		panel_1_Connection.add(pwdPassword, "3, 4, fill, default");
 		
@@ -388,10 +420,16 @@ public class DbQueryExportUI extends JFrame {
 			}
 		});
 		
-		JLabel lblSqlQuery = new JLabel("SQL Query ");
+		lblSqlQuery = new JLabel("SQL Query ");
 		scrollPane_3_SqlQuery.setRowHeaderView(lblSqlQuery);
 		
 		textAreaSqlQuery = new JTextArea();
+		textAreaSqlQuery.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyPressed(KeyEvent e) {
+				refreshEditChange("textAreaSqlQuery");
+			}
+		});
 		scrollPane_3_SqlQuery.setViewportView(textAreaSqlQuery);
 		textAreaSqlQuery.setFont(new Font("Monospaced", Font.PLAIN, 9));
 		GroupLayout gl_contentPane = new GroupLayout(contentPane);
@@ -488,6 +526,10 @@ public class DbQueryExportUI extends JFrame {
 	}
 
 	protected void actionListenerExportFileSelect() {
+		//
+		// Refresh Edit Change ...
+		//
+		refreshEditChange("btnExportFile");
 		//
 		// Select Export file ...
 		//
@@ -828,11 +870,23 @@ public class DbQueryExportUI extends JFrame {
 		// Refresh edit changes depending on fieldName
 		//
 		switch (fieldName) {
-		case "btnJdbcDriver":
-			txtDatabaseUrl.setEditable(true);
-			txtUsername.setEditable(true);
-			pwdPassword.setEditable(true);
-			break;
+			case "txtClassname":
+				lblClassName.setForeground(Color.BLACK);
+				break;
+			case "txtDatabaseUrl":
+				lblDatabaseUrl.setForeground(Color.BLACK);
+				break;
+			case "txtUsername":
+				lblUsername.setForeground(Color.BLACK);
+				break;
+			case "pwdPassword":
+				lblPassword.setForeground(Color.BLACK);
+				break;
+			case "textAreaSqlQuery":
+				lblSqlQuery.setForeground(Color.BLACK);
+			case "btnExportFile":
+				btnExportFile.setForeground(Color.BLACK);
+				break;
 		}
 	}
 
@@ -875,36 +929,42 @@ public class DbQueryExportUI extends JFrame {
 			JOptionPane.showMessageDialog(getParent(),
 					MSG_CHECK_CLASSNAME_MISSING, MSG_CRITICAL_TITLE_WARNING,
 					JOptionPane.ERROR_MESSAGE);
+			lblClassName.setForeground(Color.red);
 			return false;
 		}
 		if (txtDatabaseUrl.getText().equals("")) {
 			JOptionPane.showMessageDialog(getParent(),
 					MSG_CHECK_DATABASEURL_MISSING, MSG_CRITICAL_TITLE_WARNING,
 					JOptionPane.ERROR_MESSAGE);
+			lblDatabaseUrl.setForeground(Color.red);
 			return false;
 		}
 		if (txtUsername.getText().equals("")) {
 			JOptionPane.showMessageDialog(getParent(),
 					MSG_CHECK_USERNAME_MISSING, MSG_CRITICAL_TITLE_WARNING,
 					JOptionPane.ERROR_MESSAGE);
+			lblUsername.setForeground(Color.red);
 			return false;
 		}
 		if (pwdPassword.getText().equals("")) {
 			JOptionPane.showMessageDialog(getParent(),
 					MSG_CHECK_PASSWORD_MISSING, MSG_CRITICAL_TITLE_WARNING,
 					JOptionPane.ERROR_MESSAGE);
+			lblPassword.setForeground(Color.red);
 			return false;
 		}
 		if (textAreaSqlQuery.getText().equals("")) {
 			JOptionPane.showMessageDialog(getParent(),
 					MSG_CHECK_SQLQUERY_MISSING, MSG_CRITICAL_TITLE_WARNING,
 					JOptionPane.ERROR_MESSAGE);
+			lblSqlQuery.setForeground(Color.red);
 			return false;
 		}
 		if (txtExportFile.getText().equals("")) {
 			JOptionPane.showMessageDialog(getParent(),
 					MSG_CHECK_EXPORTFILE_MISSING, MSG_CRITICAL_TITLE_WARNING,
 					JOptionPane.ERROR_MESSAGE);
+			btnExportFile.setForeground(Color.red);
 			return false;
 		}
 		
