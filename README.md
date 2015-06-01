@@ -8,13 +8,13 @@
 
 # Demonstration
 
-* Demo 1: Using **dbQueryExport** to export an Oracle database Query
+* Demo \#1: Using **dbQueryExport** to export an Oracle database Query
 ![demo-1](https://github.com/josemarsilva/dbQueryExport/blob/master/doc/dbqueryexport-demo-1.png)  
 
-* Demo 2: Using **dbQueryExport** to export a Mysql e database Query
+* Demo \#2: Using **dbQueryExport** to export a Mysql e database Query
 ![demo-2](https://github.com/josemarsilva/dbQueryExport/blob/master/doc/dbqueryexport-demo-2.png)  
 
-* Demo 3: Using **dbQueryExport** to export a PostgreSQL database Query
+* Demo \#3: Using **dbQueryExport** to export a PostgreSQL database Query
 ![demo-3](https://github.com/josemarsilva/dbQueryExport/blob/master/doc/dbqueryexport-demo-3.png)
 
 
