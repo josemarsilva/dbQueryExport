@@ -6,7 +6,9 @@ Database Query Export
 
 ### For what is DbQueryExport?
 
-It is usefull tool to your final end user that frequently issues you need of information from your system to export to Excel file. You can use command line arguments to pre-setting some options for your end user, like database connection, path-to-sqlfile, etc.
+**DbQueryExport** is usefull tool to your final end user that does not know SQL, but frequently issues you need of information from your systems. Usually they need information exported to Excel file. 
+
+You can use command line arguments to pre-setting some options for your end user, like database connection, path-to-sqlfile, etc.
 
 
 ### Demo
