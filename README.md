@@ -4,18 +4,18 @@ Database Query Export
 # Welcome to DbQueryExport project
 **DbQueryExport** (Database Query Export) allows you export to a file the results of a query. 
 
-### For what is DbQueryExport?
+# For what is DbQueryExport?
 
 **DbQueryExport** is usefull tool to your final end user that does not know SQL, but frequently issues you need of information from your systems. Usually they need information exported to Excel file. 
 
 You can use command line arguments to pre-setting some options for your end user, like database connection, path-to-sqlfile, etc.
 
 
-### Demo
+# Demo
 ![demo-1](https://github.com/josemarsilva/dbQueryExport/blob/master/doc/dbqueryexport-demo-1.png)  ![demo-2](https://github.com/josemarsilva/dbQueryExport/blob/master/doc/dbqueryexport-demo-2.png)  ![demo-3](https://github.com/josemarsilva/dbQueryExport/blob/master/doc/dbqueryexport-demo-3.png)
 
 
-### Checking out from Git
+# Checking out from Git
 You you can check out the new branch:
 
 ```
@@ -24,7 +24,7 @@ $ git fetch origin
 $ git checkout gh-pages
 ```
 
-### Command line arguments
+# Command line arguments
 
 ```
 Usage: dbQueryExport [options]
