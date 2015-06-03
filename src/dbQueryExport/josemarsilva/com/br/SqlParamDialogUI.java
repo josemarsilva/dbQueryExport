@@ -27,7 +27,9 @@ public class SqlParamDialogUI extends JDialog {
 	private final String COLUMNTITLE_OBS = new String("Obs");
 
 	private final JPanel contentPanel = new JPanel();
+	private JScrollPane scrollPane;
 	private DefaultTableModel tableModelSqlParams;
+	private JTable tableSqlParams;
 
 	/**
 	 * Launch the application.
@@ -51,7 +53,37 @@ public class SqlParamDialogUI extends JDialog {
 		getContentPane().setLayout(new BorderLayout());
 		contentPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
 		getContentPane().add(contentPanel, BorderLayout.CENTER);
-		contentPanel.setLayout(new GridLayout(0, 2, 0, 0));
+		{
+			scrollPane = new JScrollPane();
+		}
+		GroupLayout gl_contentPanel = new GroupLayout(contentPanel);
+		gl_contentPanel.setHorizontalGroup(
+			gl_contentPanel.createParallelGroup(Alignment.LEADING)
+				.addComponent(scrollPane, GroupLayout.PREFERRED_SIZE, 440, GroupLayout.PREFERRED_SIZE)
+		);
+		gl_contentPanel.setVerticalGroup(
+			gl_contentPanel.createParallelGroup(Alignment.LEADING)
+				.addComponent(scrollPane, GroupLayout.PREFERRED_SIZE, 227, GroupLayout.PREFERRED_SIZE)
+		);
+		{
+			tableModelSqlParams = new DefaultTableModel() {
+				@Override
+				public boolean isCellEditable(int row, int column) {
+					if (column == 0 || column == 2)
+						return false;
+					else 
+						return true;
+				}
+			}; 
+			tableModelSqlParams.addColumn(COLUMNTITLE_PARAM);
+			tableModelSqlParams.addColumn(COLUMNTITLE_VALUE);
+			tableModelSqlParams.addColumn(COLUMNTITLE_OBS);
+		}
+		{
+			tableSqlParams = new JTable(tableModelSqlParams);
+			scrollPane.setViewportView(tableSqlParams);
+		}
+		contentPanel.setLayout(gl_contentPanel);
 		{
 			JPanel buttonPane = new JPanel();
 			buttonPane.setLayout(new FlowLayout(FlowLayout.RIGHT));
@@ -60,6 +92,7 @@ public class SqlParamDialogUI extends JDialog {
 				JButton okButton = new JButton("OK");
 				okButton.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent arg0) {
+						closeDialog(true);
 					}
 				});
 				okButton.setActionCommand("OK");
@@ -70,6 +103,7 @@ public class SqlParamDialogUI extends JDialog {
 				JButton cancelButton = new JButton("Cancel");
 				cancelButton.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
+						closeDialog(false);
 					}
 				});
 				cancelButton.setActionCommand("Cancel");
@@ -87,19 +121,32 @@ public class SqlParamDialogUI extends JDialog {
 	 */ 
 	public void initCompleted() {
 		//
-		// Columns ...
+		// Set Preferred Width ...
 		//
-		tableModelSqlParams = new DefaultTableModel(); 
-		tableModelSqlParams.addColumn(COLUMNTITLE_PARAM);
-		tableModelSqlParams.addColumn(COLUMNTITLE_VALUE);
-		tableModelSqlParams.addColumn(COLUMNTITLE_OBS);
-//		tableSqlParams.getColumnModel().getColumn(0).setPreferredWidth(180);
-//		tableSqlParams.getColumnModel().getColumn(1).setPreferredWidth(180);
-//		tableSqlParams.getColumnModel().getColumn(1).setPreferredWidth(700);
-
-		tableModelSqlParams.addRow(new Object[]{"r1c1", "r1c2","r1c3"});
-		tableModelSqlParams.addRow(new Object[]{"r2c1", "r2c2","r2c3"});
-		tableModelSqlParams.addRow(new Object[]{"r3c1", "r3c2","r3c3"});
+		tableSqlParams.getColumnModel().getColumn(0).setPreferredWidth(300);
+		tableSqlParams.getColumnModel().getColumn(1).setPreferredWidth(600);
+		tableSqlParams.getColumnModel().getColumn(2).setPreferredWidth(1200);
+		//
+		// Add Rows ...
+		//
+		tableModelSqlParams.addRow(new Object[]{"r01c1", "r01c2 name","r01c3: It is a really very big description for this column"});
+		tableModelSqlParams.addRow(new Object[]{"r02c1", "r02c2 name","r02c3: It is a really very big description for this column"});
+		tableModelSqlParams.addRow(new Object[]{"r03c1", "r03c2 name","r03c3: It is a really very big description for this column"});
+		tableModelSqlParams.addRow(new Object[]{"r04c1", "r04c2 name","r04c3: It is a really very big description for this column"});
+		tableModelSqlParams.addRow(new Object[]{"r05c1", "r05c2 name","r05c3: It is a really very big description for this column"});
+		tableModelSqlParams.addRow(new Object[]{"r06c1", "r06c2 name","r06c3: It is a really very big description for this column"});
+		tableModelSqlParams.addRow(new Object[]{"r07c1", "r07c2 name","r07c3: It is a really very big description for this column"});
+		tableModelSqlParams.addRow(new Object[]{"r08c1", "r08c2 name","r08c3: It is a really very big description for this column"});
+		tableModelSqlParams.addRow(new Object[]{"r09c1", "r09c2 name","r09c3: It is a really very big description for this column"});
+		tableModelSqlParams.addRow(new Object[]{"r11c1", "r01c2 name","r11c3: It is a really very big description for this column"});
+		tableModelSqlParams.addRow(new Object[]{"r12c1", "r02c2 name","r12c3: It is a really very big description for this column"});
+		tableModelSqlParams.addRow(new Object[]{"r13c1", "r03c2 name","r13c3: It is a really very big description for this column"});
+		tableModelSqlParams.addRow(new Object[]{"r14c1", "r04c2 name","r14c3: It is a really very big description for this column"});
+		tableModelSqlParams.addRow(new Object[]{"r15c1", "r05c2 name","r15c3: It is a really very big description for this column"});
+		tableModelSqlParams.addRow(new Object[]{"r16c1", "r06c2 name","r16c3: It is a really very big description for this column"});
+		tableModelSqlParams.addRow(new Object[]{"r17c1", "r07c2 name","r17c3: It is a really very big description for this column"});
+		tableModelSqlParams.addRow(new Object[]{"r18c1", "r08c2 name","r18c3: It is a really very big description for this column"});
+		tableModelSqlParams.addRow(new Object[]{"r19c1", "r09c2 name","r19c3: It is a really very big description for this column"});
 	}
 	
 	/*
