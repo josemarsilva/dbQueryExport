@@ -37,7 +37,7 @@ Examples:
     dbQueryExport.jar -c com.mysql.jdbc.Driver -d jdbc:mysql://localhost:3306/dbname -u username -p password -f "C:\TEMP\sqlquery.sql" -o "C:\TEMP\sqlquery.xls"
 
 See also:
-    http://github.com/josemarsilva/dbQueryExport"
+    http://github.com/josemarsilva/dbQueryExport
 ```
 
 # Checking out from Git
