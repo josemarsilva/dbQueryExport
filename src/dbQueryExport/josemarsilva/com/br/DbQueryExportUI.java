@@ -70,6 +70,7 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 
 import javax.swing.ImageIcon;
+
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 
@@ -77,7 +78,7 @@ public class DbQueryExportUI extends JFrame {
 	//
 	// Version and build ...
 	//
-	private final String APP_VERSION = new String("v1.02.20150531b");
+	private final String APP_VERSION = new String("v1.03.20150604");
 	//
 	// Args parameters ...
 	//
@@ -99,21 +100,33 @@ public class DbQueryExportUI extends JFrame {
 		+ "    " + ARGS_COMMAND_LINE_PARAM_PASSWORD       + "     Password Jdbc connection" + "\n"
 		+ "    " + ARGS_COMMAND_LINE_PARAM_SQLFILENAME    + "     SQL Query Filename complete path" + "\n"
 		+ "    " + ARGS_COMMAND_LINE_PARAM_EXPORTFILENAME + "     Export Filename complete path" + "\n"
+		+ "\n"
+		+ "SQL Query ad hoc parameters convention is ${ParamName|ParamDescription}\n"
 		+ "\n\n"
 		+ "Examples:\n"
-		+ "    dbQueryExport.jar -c oracle.jdbc.driver.OracleDriver -d jdbc:oracle:thin:@localhost:1521:dbname -u username -p password -f \"C:\\TEMP\\sqlquery.sql\" -o \"C:\\TEMP\\sqlquery.xls\" \n"
-		+ "    dbQueryExport.jar -c org.postgresql.Driver -d jdbc:postgresql://localhost/dbname -u username -p password -f \"C:\\TEMP\\sqlquery.sql\" -o \"C:\\TEMP\\sqlquery.xls\" \n"
-		+ "    dbQueryExport.jar -c com.mysql.jdbc.Driver -d jdbc:mysql://localhost:3306/dbname -u username -p password -f \"C:\\TEMP\\sqlquery.sql\" -o \"C:\\TEMP\\sqlquery.xls\" \n"
+		+ "    a) Command line arguments\n"
+		+ "       dbQueryExport.jar -c oracle.jdbc.driver.OracleDriver -d jdbc:oracle:thin:@localhost:1521:dbname -u username -p password -f \"C:\\TEMP\\sqlquery.sql\" -o \"C:\\TEMP\\sqlquery.xls\" \n"
+		+ "       dbQueryExport.jar -c org.postgresql.Driver -d jdbc:postgresql://localhost/dbname -u username -p password -f \"C:\\TEMP\\sqlquery.sql\" -o \"C:\\TEMP\\sqlquery.xls\" \n"
+		+ "       dbQueryExport.jar -c com.mysql.jdbc.Driver -d jdbc:mysql://localhost:3306/dbname -u username -p password -f \"C:\\TEMP\\sqlquery.sql\" -o \"C:\\TEMP\\sqlquery.xls\" \n"
+		+ "    b) SQL Query adhoc parameters to bind on execution:\n"
+		+ "        SELECT owner, table_name FROM user_tables WHERE owner = UPPER('${pOwner|Enter Owner of the tables})'\n"
+		+ "        SELECT hostname, user from user WHERE hostname LIKE UPPER('${pHostname|Enter HostName to uses})'\n"
 		+ "\n\n"
 		+ "See also:\n"
-		+ "    http://github.com/josemarsilva/dbQueryExport\n"
+		+ "    http://github.com/josemarsilva/dbQueryExport"
 		);
-	private final String MSG_INFO_TITLE_WARNING = new String("Informação");
-	private final String MSG_WARN_TITLE_WARNING = new String("Atenção");
-	private final String MSG_CRITICAL_TITLE_WARNING = new String("Erro Crítico");
+	// Title
+	private final String MSG_TITLE_INFO_WARNING = new String("Informação");
+	private final String MSG_TITLE_WARN_WARNING = new String("Atenção");
+	private final String MSG_TITLE_CRITICAL_WARNING = new String("Erro Crítico");
+	private final String MSG_TITLE_QUESTION_WARNING = new String("Pergunta a ser respondida");
 	private final String MSG_INFO_COPYTOCLIPBOARD_SUCCESS = new String("Cópia das mensagens para área de Clipboard concluída com sucesso!");
 	private final String MSG_INFO_EXECUTION_SUCCESS = new String("Execução concluída com sucesso!");	
+	private final String MSG_INFO_SQLPARAM_SUCCESS = new String("Extração dos parâmetros 'SQL Query' concluída com sucesso!");	
+	private final String MSG_INFO_QUESTION_OPENFILE = new String("Você quer abrir o arquivo '%s' agora?");
+	private final String MSG_INFO_QUESTION_EXITAPP = new String("Tem certeza que deseja sair da aplicação?");
 	private final String MSG_WARN_EXECUTION_FAILED = new String("Execução concluída com falha!\n Exceção %s");
+	private final String MSG_WARN_EXCEL_LIMIT_EXCEEDED = new String("Resultado de sua SQL Query é superior ao limite de %s linhas do Excel. Resultado será truncado neste limite!");
 	private final String MSG_WARN_NOTFOUND = new String("Arquivo '%s' não existe ou não pode ser aberto para leitura!");
 	private final String MSG_CHECK_CLASSNAME_MISSING = new String("Campo 'Jdbc Class Name' não foi preenchido!"); 
 	private final String MSG_CHECK_DATABASEURL_MISSING = new String("Campo 'Database Url' não foi preenchido!"); 
@@ -128,7 +141,8 @@ public class DbQueryExportUI extends JFrame {
 	//
 	private final String COLUMNTITLE_PARAM = new String("Param");
 	private final String COLUMNTITLE_VALUE = new String("Value");
-	private final String COLUMNTITLE_OBS = new String("Obs");
+	private final String COLUMNTITLE_DESCRIPTION = new String("Description");
+	private final String COLUMNTITLE_HIDDEN = new String("Hidden");
 	
 	
 	//
@@ -143,7 +157,17 @@ public class DbQueryExportUI extends JFrame {
 	// XLS
 	//
 	private final String WORKSHEET_DEFAULT_NAME = new String("dbQueryExport");
+	private final String EXCEL_EXTENSION = new String(".xls");
 	private final int WORKSHEET_MAX_ROW = 65536;
+	
+	//
+	// SQL Parameter ${param|description} ...
+	//
+	private final String SQL_PARAM_BEGIN = new String("${");
+	private final String SQL_PARAM_END = new String("}");
+	private final String SQL_PARAM_SEPARATOR = new String("\\|");
+	
+	
 	
 	//
 	// Class Properties ...
@@ -300,10 +324,6 @@ public class DbQueryExportUI extends JFrame {
 		panel_6_ExportFilename.add(txtExportFile, "3, 1, fill, default");
 		txtExportFile.setColumns(10);
 		
-		tableModelSqlParams = new DefaultTableModel(); 
-		tableModelSqlParams.addColumn(COLUMNTITLE_PARAM);
-		tableModelSqlParams.addColumn(COLUMNTITLE_VALUE);
-		tableModelSqlParams.addColumn(COLUMNTITLE_OBS);
 		panel_2_SqlQueryFilename.setLayout(new FormLayout(new ColumnSpec[] {
 				FormFactory.DEFAULT_COLSPEC,
 				ColumnSpec.decode("center:75dlu"),
@@ -412,8 +432,25 @@ public class DbQueryExportUI extends JFrame {
 		scrollPane_4_SqlParams.setRowHeaderView(btnSqlParams);
 		btnSqlParams.setToolTipText("Extract SQL Params from SQL Query ...");
 		btnSqlParams.setIcon(new ImageIcon(DbQueryExportUI.class.getResource("/icon-table-arrow-16x16.png")));
-		tableSqlParams = new JTable();
-		scrollPane_4_SqlParams.setViewportView(tableSqlParams);
+		{
+			tableModelSqlParams = new DefaultTableModel() {
+				@Override
+				public boolean isCellEditable(int row, int column) {
+					if (column == 0 || column == 2)
+						return false;
+					else 
+						return true;
+				}
+			}; 
+			tableModelSqlParams.addColumn(COLUMNTITLE_PARAM);
+			tableModelSqlParams.addColumn(COLUMNTITLE_VALUE);
+			tableModelSqlParams.addColumn(COLUMNTITLE_DESCRIPTION);
+			tableModelSqlParams.addColumn(COLUMNTITLE_HIDDEN);
+		}
+		{			
+			tableSqlParams = new JTable(tableModelSqlParams);
+			scrollPane_4_SqlParams.setViewportView(tableSqlParams);
+		}
 		btnSqlParams.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				actionListenerSqlParamsExtract();
@@ -505,7 +542,7 @@ public class DbQueryExportUI extends JFrame {
 		// Show about dialog box
 		//
 		JOptionPane.showMessageDialog(getParent(),
-				MSG_INFO_COMMAND_LINE_HELP, MSG_INFO_TITLE_WARNING,
+				MSG_INFO_COMMAND_LINE_HELP, MSG_TITLE_INFO_WARNING,
 				JOptionPane.INFORMATION_MESSAGE);
 		
 	}
@@ -520,7 +557,7 @@ public class DbQueryExportUI extends JFrame {
 				textAreaStatusMessage.getText());
 		clipboard.setContents( clipboardString, null);
 		JOptionPane.showMessageDialog(getParent(),
-				MSG_INFO_COPYTOCLIPBOARD_SUCCESS, MSG_INFO_TITLE_WARNING,
+				MSG_INFO_COPYTOCLIPBOARD_SUCCESS, MSG_TITLE_INFO_WARNING,
 				JOptionPane.INFORMATION_MESSAGE);
 		
 	}
@@ -546,9 +583,88 @@ public class DbQueryExportUI extends JFrame {
 			//
 			// Set file choosen ...
 			//
-			txtExportFile.setText(jFileChooser.getSelectedFile().getPath());
+			String sExportFile = jFileChooser.getSelectedFile().getPath();
+			if (sExportFile.length() > 0) {
+				if (sExportFile.length() > String.valueOf(EXCEL_EXTENSION).length()) {
+					if (!sExportFile.toLowerCase().endsWith(EXCEL_EXTENSION.toLowerCase())) {
+						sExportFile = sExportFile + EXCEL_EXTENSION;					
+					}
+				} else {
+					sExportFile = sExportFile + EXCEL_EXTENSION;					
+				}
+			}
+			txtExportFile.setText(sExportFile);
 			refreshEditChange("btnExportFile");
 		}
+		
+	}
+	
+	/*
+	 * 
+	 */
+	protected void getSqlParamsFromSqlQuery(String sSql) {
+		
+		//
+		// Remove all rows from table ...
+		//
+		for (int i = tableModelSqlParams.getRowCount() - 1; i >= 0; i--) {
+			tableModelSqlParams.removeRow(i);
+		}
+		
+		//
+		// sSql is not empty ...
+		//
+		if (sSql.length() > 0) {
+			//
+			// Loop while exists SQL_PARAM_BEGIN
+			//
+			int i=0;
+			int j=0;
+			while ( sSql.substring(i, sSql.length()-1).contains(SQL_PARAM_BEGIN) ){
+				//
+				// i = sSql.indexOf( next( SQL_PARAM_BEGIN ) )
+				//
+				i = sSql.substring(i, sSql.length()-1).indexOf(SQL_PARAM_BEGIN) + j;
+				
+				//
+				// Stop if no more next( SQL_PARAM_BEGIN )
+				//
+				if (i < 0){
+					break;
+				}
+				
+				//
+				// j = sSql.indexOf( next( SQL_PARAM_END ) )
+				//
+				j = sSql.substring(i+SQL_PARAM_BEGIN.length(), sSql.length()-1).indexOf(SQL_PARAM_END) + i + SQL_PARAM_BEGIN.length() + SQL_PARAM_END.length();
+				
+				//
+				// Stop if no more next( SQL_PARAM_END )
+				//
+				if (j < 0){
+					break;
+				}
+				
+				//
+				// add table row of each param ...
+				//
+				String sSqlParam = sSql.substring(i, j);
+				String[] sqlParamParts = sSql.substring(i, j).replace(SQL_PARAM_BEGIN, "").replace(SQL_PARAM_END, "").split(SQL_PARAM_SEPARATOR);
+				String sSqlParamName = new String("");
+				String sSqlParamDescription = new String("");
+				if (sqlParamParts.length > 0 ) sSqlParamName = sqlParamParts[0];
+				if (sqlParamParts.length > 1 ) sSqlParamDescription = sqlParamParts[1];
+				tableModelSqlParams.addRow(new Object[]{sSqlParamName, "", sSqlParamDescription,sSqlParam});
+
+				//
+				// Next( SQL_PARAM_BEGIN )
+				//
+				i = j;
+				
+			}
+			
+		}
+
 		
 	}
 
@@ -556,9 +672,15 @@ public class DbQueryExportUI extends JFrame {
 		//
 		// Extract parameters from SQL ...
 		//
-		tableModelSqlParams.addRow(new Object[]{"r1c1", "r1c2","r1c3"});
-		tableModelSqlParams.addRow(new Object[]{"r2c1", "r2c2","r2c3"});
-		tableModelSqlParams.addRow(new Object[]{"r3c1", "r3c2","r3c3"});
+		getSqlParamsFromSqlQuery(textAreaSqlQuery.getText());
+		
+		//
+		// Message Dialog Box ...
+		//
+		JOptionPane.showMessageDialog(getParent(),
+				MSG_INFO_SQLPARAM_SUCCESS, MSG_TITLE_INFO_WARNING,
+				JOptionPane.INFORMATION_MESSAGE);
+
 
 	}
 
@@ -566,7 +688,13 @@ public class DbQueryExportUI extends JFrame {
 		//
 		// ExitApp ...
 		//
-		System.exit(0);
+		int dialogButton = JOptionPane.YES_NO_OPTION;
+		dialogButton = JOptionPane.showConfirmDialog(getParent(),
+				MSG_INFO_QUESTION_EXITAPP, MSG_TITLE_QUESTION_WARNING,
+				dialogButton);
+        if(dialogButton == JOptionPane.YES_OPTION) {
+            System.exit(0);
+          }
 		
 	}
 
@@ -595,6 +723,35 @@ public class DbQueryExportUI extends JFrame {
 		
 	}
 	
+	/*
+	 * 
+	 */
+	public String getFinalSqlQuery() {
+		
+		//
+		// Get original SqlQuery ...
+		//
+		String sFinalSqlQuery = textAreaSqlQuery.getText();
+		
+		//
+		// Replace SqlParams for literal values ...
+		//
+		String sSqlParam = new String("");
+		String sSqlParamValue = new String("");
+		for (int i = 0; i < tableModelSqlParams.getRowCount(); i++) {
+			sSqlParam = (String)tableModelSqlParams.getValueAt(i, 3);
+			sSqlParamValue = (String)tableModelSqlParams.getValueAt(i, 1);
+			if (!sSqlParam.equals("")) {
+				sFinalSqlQuery = sFinalSqlQuery.replace(sSqlParam, sSqlParamValue);
+			}
+		}
+		
+		//
+		// Return ...
+		//
+		return sFinalSqlQuery;
+	}
+	
 	@SuppressWarnings("deprecation")
 	protected void actionListenerExportExecute() {		
 		//
@@ -608,6 +765,9 @@ public class DbQueryExportUI extends JFrame {
 		PreparedStatement prepStmt;
 		FileOutputStream fileOutputStream;
 		Workbook workbook ;
+		String fieldNameFailure = new String("");
+		String sFinalSqlQuery = new String("");
+		boolean bMessageSqlQuery = false;
 		
 		try {
 			
@@ -615,6 +775,7 @@ public class DbQueryExportUI extends JFrame {
 			// Step #2: Open new .xls file  ...
 			//
 			statusMessageAddMsg("Step #2: Open new .xls file ...");
+			fieldNameFailure = new String("txtExportFile");
 			statusMessageAddMsg("  - FileOutputStream("+txtExportFile.getText()+")");
 			fileOutputStream = new FileOutputStream(new File(txtExportFile.getText()));
 			statusMessageAddMsg("  - new HSSFWorkbook()");
@@ -629,8 +790,10 @@ public class DbQueryExportUI extends JFrame {
 			//
 			statusMessageAddMsg("Step #3: Open new JDBC connection ...");
 			statusMessageAddMsg("  - Class.forName(" + txtClassname.getText() + ")" );
+			fieldNameFailure = new String("txtClassname");
 			Class.forName(txtClassname.getText());
 			statusMessageAddMsg("  - DriverManager.getConnection(" + txtDatabaseUrl.getText() + "," + txtUsername.getText() + ", ********" + ")" );
+			fieldNameFailure = new String("txtDatabaseUrl,txtUsername,pwdPassword");
 			conn = DriverManager.getConnection(txtDatabaseUrl.getText(),txtUsername.getText(),pwdPassword.getText());
 			int rowCount = 0;
 
@@ -639,11 +802,16 @@ public class DbQueryExportUI extends JFrame {
 			//
 			statusMessageAddMsg("Step #4: Prepare and execute Query Statement ..." );
 			statusMessageAddMsg("  - conn.prepareStatement()" );
-			prepStmt = conn.prepareStatement(textAreaSqlQuery.getText(), ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE, ResultSet.HOLD_CURSORS_OVER_COMMIT);
+			fieldNameFailure = new String("textAreaSqlQuery");
+			sFinalSqlQuery = getFinalSqlQuery();
+			bMessageSqlQuery = true;
+			prepStmt = conn.prepareStatement(sFinalSqlQuery, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE, ResultSet.HOLD_CURSORS_OVER_COMMIT);
 			statusMessageAddMsg("  - prepStmt.executeQuery()" );
 			ResultSet rs = prepStmt.executeQuery();
+			bMessageSqlQuery = false;
 			statusMessageAddMsg("  - rs.getMetaData()" );
 			ResultSetMetaData rsmd = rs.getMetaData();
+			fieldNameFailure = new String("textAreaSqlQuery");
 			statusMessageAddMsg("  - sheet.createRow()" );
 			row = sheet.createRow(0);
 			for (int i=1; i <= rsmd.getColumnCount(); i++) {
@@ -663,7 +831,8 @@ public class DbQueryExportUI extends JFrame {
 			//
 			statusMessageAddMsg("Step #5: Loop on ResultSet ..." );
 			int rowCurrent = 0;
-			while (rs.next()) {
+			boolean bAbortResultSet = false;
+			while (rs.next() && !bAbortResultSet) {
 				//
 				// Status message row() ...
 				//
@@ -711,6 +880,15 @@ public class DbQueryExportUI extends JFrame {
 							cell.setCellValue(value);						
 						}
 					}
+				} else {
+					//
+					// Excel limit exceeded, so abort result set
+					//
+					bAbortResultSet = true;
+					statusMessageAddMsg(MSG_WARN_EXCEL_LIMIT_EXCEEDED.replace("%s", String.valueOf(WORKSHEET_MAX_ROW)));
+					JOptionPane.showMessageDialog(getParent(),
+							MSG_WARN_EXCEL_LIMIT_EXCEEDED.replace("%s", String.valueOf(WORKSHEET_MAX_ROW)), MSG_TITLE_WARN_WARNING,
+							JOptionPane.ERROR_MESSAGE);
 				}
 					
 				
@@ -745,16 +923,55 @@ public class DbQueryExportUI extends JFrame {
 			// Step #8: Show Message ...
 			//
 			JOptionPane.showMessageDialog(getParent(),
-					MSG_INFO_EXECUTION_SUCCESS, MSG_INFO_TITLE_WARNING,
+					MSG_INFO_EXECUTION_SUCCESS, MSG_TITLE_INFO_WARNING,
 					JOptionPane.INFORMATION_MESSAGE);
+			
+			//
+			// Step #9: Open file?
+			//
+			int dialogButton = JOptionPane.YES_NO_OPTION;
+			dialogButton = JOptionPane.showConfirmDialog(getParent(),
+					MSG_INFO_QUESTION_OPENFILE.replaceAll("%s", txtExportFile.getText()), MSG_TITLE_QUESTION_WARNING,
+					dialogButton);
+	        if(dialogButton == JOptionPane.YES_OPTION) {
+	        	Runtime.getRuntime().exec("rundll32 url.dll,FileProtocolHandler " + txtExportFile.getText());
+	          }
 			
 
 		} catch (Exception e) {
+			//
+			// Message Dialog Box ...
+			//
 			JOptionPane.showMessageDialog(getParent(),
-					MSG_WARN_EXECUTION_FAILED.replace("%s", e.toString()), MSG_CRITICAL_TITLE_WARNING,
+					MSG_WARN_EXECUTION_FAILED.replace("%s", e.toString()), MSG_TITLE_CRITICAL_WARNING,
 					JOptionPane.ERROR_MESSAGE);
-			statusMessageAddMsg(e.toString());
+			//
+			// Log error message ...
+			//
 			e.printStackTrace();
+			statusMessageAddMsg(e.toString());
+			if (bMessageSqlQuery) {
+				statusMessageAddMsg(sFinalSqlQuery);
+			}
+			
+			//
+			// Color red fieldName on Failure ...
+			//
+			switch (fieldNameFailure) {
+			case "btnExportFile":
+				btnExportFile.setForeground(Color.red);
+				break;
+			case "txtClassname":
+				lblClassName.setForeground(Color.red);
+				break;
+			case "txtDatabaseUrl,txtUsername,pwdPassword":
+				lblDatabaseUrl.setForeground(Color.red);
+				lblUsername.setForeground(Color.red);
+				lblPassword.setForeground(Color.red);
+				break;
+			case "textAreaSqlQuery":
+				lblSqlQuery.setForeground(Color.red);
+		}
 		} finally {
 			
 		}
@@ -778,7 +995,7 @@ public class DbQueryExportUI extends JFrame {
 			bufferedReader.close();
 		} catch (Exception e) {
 			JOptionPane.showMessageDialog(getParent(),
-					MSG_WARN_NOTFOUND.replace("%s", filename), MSG_WARN_TITLE_WARNING,
+					MSG_WARN_NOTFOUND.replace("%s", filename), MSG_TITLE_WARN_WARNING,
 					JOptionPane.ERROR_MESSAGE);
 			e.printStackTrace();
 		}
@@ -823,17 +1040,11 @@ public class DbQueryExportUI extends JFrame {
 		if ( !(mapArgs.get(ARGS_COMMAND_LINE_PARAM_SQLFILENAME)==null) ) {
 			txtSqlFilename.setText(mapArgs.get(ARGS_COMMAND_LINE_PARAM_SQLFILENAME));
 			textAreaSqlQuery.setText(getFileContents(txtSqlFilename.getText()));
+			getSqlParamsFromSqlQuery(textAreaSqlQuery.getText());
 		}
 		if ( !(mapArgs.get(ARGS_COMMAND_LINE_PARAM_EXPORTFILENAME)==null) ) {
 			txtExportFile.setText(mapArgs.get(ARGS_COMMAND_LINE_PARAM_EXPORTFILENAME));
 		}
-		//
-		// JTable initialization ...
-		//
-		tableSqlParams.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-//		tableSqlParams.getColumnModel().getColumn(0).setPreferredWidth(180);
-//		tableSqlParams.getColumnModel().getColumn(1).setPreferredWidth(180);
-//		tableSqlParams.getColumnModel().getColumn(1).setPreferredWidth(700);
 		
 	}
 	
@@ -875,6 +1086,8 @@ public class DbQueryExportUI extends JFrame {
 				break;
 			case "txtDatabaseUrl":
 				lblDatabaseUrl.setForeground(Color.BLACK);
+				lblUsername.setForeground(Color.BLACK);
+				lblPassword.setForeground(Color.BLACK);
 				break;
 			case "txtUsername":
 				lblUsername.setForeground(Color.BLACK);
@@ -900,21 +1113,21 @@ public class DbQueryExportUI extends JFrame {
 		statusMessageReset();
 		
 		//
+		// Initialize table columns ...
+		//
+		tableSqlParams.getColumnModel().getColumn(0).setPreferredWidth(100);
+		tableSqlParams.getColumnModel().getColumn(1).setPreferredWidth(150);
+		tableSqlParams.getColumnModel().getColumn(2).setPreferredWidth(150);
+		tableSqlParams.getColumnModel().getColumn(3).setMinWidth(0);
+		tableSqlParams.getColumnModel().getColumn(3).setMaxWidth(0);
+		tableSqlParams.getColumnModel().getColumn(3).setWidth(0);
+		tableSqlParams.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+		
+		
+		//
 		// Initialize UI fields ...
 		//
 		initUIFieldsFromArgs();
-		
-		//
-		// JTable initialization ...
-		//
-//		tableSqlParams.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-		tableModelSqlParams.addColumn(COLUMNTITLE_PARAM);
-		tableModelSqlParams.addColumn(COLUMNTITLE_VALUE);
-		tableModelSqlParams.addColumn(COLUMNTITLE_OBS);
-//		tableSqlParams.getColumnModel().getColumn(0).setPreferredWidth(180);
-//		tableSqlParams.getColumnModel().getColumn(1).setPreferredWidth(700);
-//		tableSqlParams.getColumnModel().getColumn(2).setPreferredWidth(180);
-		
 		
 	}
 	
@@ -927,42 +1140,42 @@ public class DbQueryExportUI extends JFrame {
 		//
 		if (txtClassname.getText().equals("")) {
 			JOptionPane.showMessageDialog(getParent(),
-					MSG_CHECK_CLASSNAME_MISSING, MSG_CRITICAL_TITLE_WARNING,
+					MSG_CHECK_CLASSNAME_MISSING, MSG_TITLE_CRITICAL_WARNING,
 					JOptionPane.ERROR_MESSAGE);
 			lblClassName.setForeground(Color.red);
 			return false;
 		}
 		if (txtDatabaseUrl.getText().equals("")) {
 			JOptionPane.showMessageDialog(getParent(),
-					MSG_CHECK_DATABASEURL_MISSING, MSG_CRITICAL_TITLE_WARNING,
+					MSG_CHECK_DATABASEURL_MISSING, MSG_TITLE_CRITICAL_WARNING,
 					JOptionPane.ERROR_MESSAGE);
 			lblDatabaseUrl.setForeground(Color.red);
 			return false;
 		}
 		if (txtUsername.getText().equals("")) {
 			JOptionPane.showMessageDialog(getParent(),
-					MSG_CHECK_USERNAME_MISSING, MSG_CRITICAL_TITLE_WARNING,
+					MSG_CHECK_USERNAME_MISSING, MSG_TITLE_CRITICAL_WARNING,
 					JOptionPane.ERROR_MESSAGE);
 			lblUsername.setForeground(Color.red);
 			return false;
 		}
 		if (pwdPassword.getText().equals("")) {
 			JOptionPane.showMessageDialog(getParent(),
-					MSG_CHECK_PASSWORD_MISSING, MSG_CRITICAL_TITLE_WARNING,
+					MSG_CHECK_PASSWORD_MISSING, MSG_TITLE_CRITICAL_WARNING,
 					JOptionPane.ERROR_MESSAGE);
 			lblPassword.setForeground(Color.red);
 			return false;
 		}
 		if (textAreaSqlQuery.getText().equals("")) {
 			JOptionPane.showMessageDialog(getParent(),
-					MSG_CHECK_SQLQUERY_MISSING, MSG_CRITICAL_TITLE_WARNING,
+					MSG_CHECK_SQLQUERY_MISSING, MSG_TITLE_CRITICAL_WARNING,
 					JOptionPane.ERROR_MESSAGE);
 			lblSqlQuery.setForeground(Color.red);
 			return false;
 		}
 		if (txtExportFile.getText().equals("")) {
 			JOptionPane.showMessageDialog(getParent(),
-					MSG_CHECK_EXPORTFILE_MISSING, MSG_CRITICAL_TITLE_WARNING,
+					MSG_CHECK_EXPORTFILE_MISSING, MSG_TITLE_CRITICAL_WARNING,
 					JOptionPane.ERROR_MESSAGE);
 			btnExportFile.setForeground(Color.red);
 			return false;
