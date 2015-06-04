@@ -78,7 +78,7 @@ public class DbQueryExportUI extends JFrame {
 	//
 	// Version and build ...
 	//
-	private final String APP_VERSION = new String("v1.03.20150604");
+	private final String APP_VERSION = new String("v1.04.201506");
 	//
 	// Args parameters ...
 	//
@@ -110,7 +110,7 @@ public class DbQueryExportUI extends JFrame {
 		+ "       dbQueryExport.jar -c com.mysql.jdbc.Driver -d jdbc:mysql://localhost:3306/dbname -u username -p password -f \"C:\\TEMP\\sqlquery.sql\" -o \"C:\\TEMP\\sqlquery.xls\" \n"
 		+ "    b) SQL Query adhoc parameters to bind on execution:\n"
 		+ "        SELECT owner, table_name FROM user_tables WHERE owner = UPPER('${pOwner|Enter Owner of the tables})'\n"
-		+ "        SELECT hostname, user from user WHERE hostname LIKE UPPER('${pHostname|Enter HostName to uses})'\n"
+		+ "        SELECT hostname, user from user WHERE hostname LIKE '${pHostname|Enter HostName to users}'\n"
 		+ "\n\n"
 		+ "See also:\n"
 		+ "    http://github.com/josemarsilva/dbQueryExport"
