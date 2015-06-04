@@ -20,6 +20,10 @@
 
 ![demo-3](https://github.com/josemarsilva/dbQueryExport/blob/master/doc/dbqueryexport-demo-3.png)
 
+* Demo \#4: Using **dbQueryExport** to ask adhoc parameters used Sql Query
+
+![demo-4](https://github.com/josemarsilva/dbQueryExport/blob/master/doc/dbqueryexport-demo-4.png)
+
 
 # Command line arguments
 
