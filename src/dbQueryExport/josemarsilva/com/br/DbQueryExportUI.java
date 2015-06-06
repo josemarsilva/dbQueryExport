@@ -78,7 +78,7 @@ public class DbQueryExportUI extends JFrame {
 	//
 	// Version and build ...
 	//
-	private final String APP_VERSION = new String("v1.04.201506");
+	private final String APP_VERSION = new String("v1.05.20150606");
 	//
 	// Args parameters ...
 	//
@@ -636,7 +636,7 @@ public class DbQueryExportUI extends JFrame {
 				//
 				// j = sSql.indexOf( next( SQL_PARAM_END ) )
 				//
-				j = sSql.substring(i+SQL_PARAM_BEGIN.length(), sSql.length()-1).indexOf(SQL_PARAM_END) + i + SQL_PARAM_BEGIN.length() + SQL_PARAM_END.length();
+				j = sSql.substring(i+SQL_PARAM_BEGIN.length(), sSql.length()).indexOf(SQL_PARAM_END) + i + SQL_PARAM_BEGIN.length() + SQL_PARAM_END.length();
 				
 				//
 				// Stop if no more next( SQL_PARAM_END )
