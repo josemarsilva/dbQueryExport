@@ -78,7 +78,7 @@ public class DbQueryExportUI extends JFrame {
 	//
 	// Version and build ...
 	//
-	private final String APP_VERSION = new String("v1.05.20150606");
+	private final String APP_VERSION = new String("v2.01.20160329");
 	//
 	// Args parameters ...
 	//
@@ -108,6 +108,7 @@ public class DbQueryExportUI extends JFrame {
 		+ "       dbQueryExport.jar -c oracle.jdbc.driver.OracleDriver -d jdbc:oracle:thin:@localhost:1521:dbname -u username -p password -f \"C:\\TEMP\\sqlquery.sql\" -o \"C:\\TEMP\\sqlquery.xls\" \n"
 		+ "       dbQueryExport.jar -c org.postgresql.Driver -d jdbc:postgresql://localhost/dbname -u username -p password -f \"C:\\TEMP\\sqlquery.sql\" -o \"C:\\TEMP\\sqlquery.xls\" \n"
 		+ "       dbQueryExport.jar -c com.mysql.jdbc.Driver -d jdbc:mysql://localhost:3306/dbname -u username -p password -f \"C:\\TEMP\\sqlquery.sql\" -o \"C:\\TEMP\\sqlquery.xls\" \n"
+		+ "       dbQueryExport.jar -c com.microsoft.sqlserver.jdbc.SQLServerDriver -d jdbc:sqlserver://localhost:1433;databaseName=automacao -u username -p password -f \"C:\\TEMP\\sqlquery.sql\" -o \"C:\\TEMP\\sqlquery.xls\" \n"
 		+ "    b) SQL Query adhoc parameters to bind on execution:\n"
 		+ "        SELECT owner, table_name FROM user_tables WHERE owner = UPPER('${pOwner|Enter Owner of the tables})'\n"
 		+ "        SELECT hostname, user from user WHERE hostname LIKE '${pHostname|Enter HostName to users}'\n"
