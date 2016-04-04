@@ -6,6 +6,7 @@ import java.awt.Cursor;
 import java.awt.EventQueue;
 import java.awt.Toolkit;
 
+import javax.sql.rowset.CachedRowSet;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
@@ -78,7 +79,7 @@ public class DbQueryExportUI extends JFrame {
 	//
 	// Version and build ...
 	//
-	private final String APP_VERSION = new String("v2.01.20160329");
+	private final String APP_VERSION = new String("v.2016.03.31");
 	//
 	// Args parameters ...
 	//
@@ -92,7 +93,7 @@ public class DbQueryExportUI extends JFrame {
 	//
 	// Messages ...
 	//
-	private final String MSG_INFO_COMMAND_LINE_HELP = new String("Database Query Export allows you export to a file the results of a query\n\n"
+	private final String MSG_INFO_COMMAND_LINE_HELP = new String("Database Query Export allows you export to a file the results of a query - Version (" + APP_VERSION + ")\n\n"
 		+ "Usage: dbQueryExport [options]\n"
 		+ "    " + ARGS_COMMAND_LINE_CLASSNAME            + "     Class name for invocation" + "\n"
 		+ "    " + ARGS_COMMAND_LINE_PARAM_DATABASEURL    + "     Database Url location for Jdbc Driver" + "\n"
@@ -109,6 +110,7 @@ public class DbQueryExportUI extends JFrame {
 		+ "       dbQueryExport.jar -c org.postgresql.Driver -d jdbc:postgresql://localhost/dbname -u username -p password -f \"C:\\TEMP\\sqlquery.sql\" -o \"C:\\TEMP\\sqlquery.xls\" \n"
 		+ "       dbQueryExport.jar -c com.mysql.jdbc.Driver -d jdbc:mysql://localhost:3306/dbname -u username -p password -f \"C:\\TEMP\\sqlquery.sql\" -o \"C:\\TEMP\\sqlquery.xls\" \n"
 		+ "       dbQueryExport.jar -c com.microsoft.sqlserver.jdbc.SQLServerDriver -d jdbc:sqlserver://localhost:1433;databaseName=automacao -u username -p password -f \"C:\\TEMP\\sqlquery.sql\" -o \"C:\\TEMP\\sqlquery.xls\" \n"
+		+ "       dbQueryExport.jar -c net.sourceforge.jtds.jdbc.Driver -d jdbc:jtds:sqlserver://localhost:1433;databaseName=automacao -u username -p password -f \"C:\\TEMP\\sqlquery.sql\" -o \"C:\\TEMP\\sqlquery.xls\" \n"
 		+ "    b) SQL Query adhoc parameters to bind on execution:\n"
 		+ "        SELECT owner, table_name FROM user_tables WHERE owner = UPPER('${pOwner|Enter Owner of the tables})'\n"
 		+ "        SELECT hostname, user from user WHERE hostname LIKE '${pHostname|Enter HostName to users}'\n"
@@ -117,24 +119,24 @@ public class DbQueryExportUI extends JFrame {
 		+ "    http://github.com/josemarsilva/dbQueryExport"
 		);
 	// Title
-	private final String MSG_TITLE_INFO_WARNING = new String("Informação");
-	private final String MSG_TITLE_WARN_WARNING = new String("Atenção");
-	private final String MSG_TITLE_CRITICAL_WARNING = new String("Erro Crítico");
-	private final String MSG_TITLE_QUESTION_WARNING = new String("Pergunta a ser respondida");
-	private final String MSG_INFO_COPYTOCLIPBOARD_SUCCESS = new String("Cópia das mensagens para área de Clipboard concluída com sucesso!");
-	private final String MSG_INFO_EXECUTION_SUCCESS = new String("Execução concluída com sucesso!");	
-	private final String MSG_INFO_SQLPARAM_SUCCESS = new String("Extração dos parâmetros 'SQL Query' concluída com sucesso!");	
-	private final String MSG_INFO_QUESTION_OPENFILE = new String("Você quer abrir o arquivo '%s' agora?");
-	private final String MSG_INFO_QUESTION_EXITAPP = new String("Tem certeza que deseja sair da aplicação?");
-	private final String MSG_WARN_EXECUTION_FAILED = new String("Execução concluída com falha!\n Exceção %s");
-	private final String MSG_WARN_EXCEL_LIMIT_EXCEEDED = new String("Resultado de sua SQL Query é superior ao limite de %s linhas do Excel. Resultado será truncado neste limite!");
-	private final String MSG_WARN_NOTFOUND = new String("Arquivo '%s' não existe ou não pode ser aberto para leitura!");
-	private final String MSG_CHECK_CLASSNAME_MISSING = new String("Campo 'Jdbc Class Name' não foi preenchido!"); 
-	private final String MSG_CHECK_DATABASEURL_MISSING = new String("Campo 'Database Url' não foi preenchido!"); 
-	private final String MSG_CHECK_USERNAME_MISSING = new String("Campo 'Username' não foi preenchido!"); 
-	private final String MSG_CHECK_PASSWORD_MISSING = new String("Campo 'Password' não foi preenchido!"); 
-	private final String MSG_CHECK_SQLQUERY_MISSING = new String("Campo 'SQL Query' não foi preenchido!"); 
-	private final String MSG_CHECK_EXPORTFILE_MISSING = new String("Campo 'Export File' não foi preenchido!"); 
+	private final String MSG_TITLE_INFO_WARNING = new String("Information");
+	private final String MSG_TITLE_WARN_WARNING = new String("Attention");
+	private final String MSG_TITLE_CRITICAL_WARNING = new String("Critical Error");
+	private final String MSG_TITLE_QUESTION_WARNING = new String("Answer question please");
+	private final String MSG_INFO_COPYTOCLIPBOARD_SUCCESS = new String("Copy logging information to Clipboard completed successfully!");
+	private final String MSG_INFO_EXECUTION_SUCCESS = new String("Execution completed successfully!");	
+	private final String MSG_INFO_SQLPARAM_SUCCESS = new String("Parameters extraction 'SQL Query' completed successfully!");	
+	private final String MSG_INFO_QUESTION_OPENFILE = new String("Do you want to open file '%s' now?");
+	private final String MSG_INFO_QUESTION_EXITAPP = new String("Are you sure you want to exit the app?");
+	private final String MSG_WARN_EXECUTION_FAILED = new String("Execution failed!!!\nException is '%s'");
+	private final String MSG_WARN_EXCEL_LIMIT_EXCEEDED = new String("The result set of your SQL Query is not supported by Excel limit: %s rows. The result set will be truncated, some data may be lost!");
+	private final String MSG_WARN_NOTFOUND = new String("File '%s' does not exist or can not be opened for reading!");
+	private final String MSG_CHECK_CLASSNAME_MISSING = new String("Field 'Jdbc Class Name' is empty!"); 
+	private final String MSG_CHECK_DATABASEURL_MISSING = new String("Field 'Database Url' is empty!"); 
+	private final String MSG_CHECK_USERNAME_MISSING = new String("Field 'Username' is empty!"); 
+	private final String MSG_CHECK_PASSWORD_MISSING = new String("Field 'Password' is empty!"); 
+	private final String MSG_CHECK_SQLQUERY_MISSING = new String("Field 'SQL Query' is empty!"); 
+	private final String MSG_CHECK_EXPORTFILE_MISSING = new String("Field 'Export File' is empty!"); 
 
 	
 	//
@@ -806,7 +808,7 @@ public class DbQueryExportUI extends JFrame {
 			fieldNameFailure = new String("textAreaSqlQuery");
 			sFinalSqlQuery = getFinalSqlQuery();
 			bMessageSqlQuery = true;
-			prepStmt = conn.prepareStatement(sFinalSqlQuery, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE, ResultSet.HOLD_CURSORS_OVER_COMMIT);
+			prepStmt = conn.prepareStatement(sFinalSqlQuery, CachedRowSet.TYPE_SCROLL_INSENSITIVE, CachedRowSet.CONCUR_READ_ONLY, CachedRowSet.HOLD_CURSORS_OVER_COMMIT);
 			statusMessageAddMsg("  - prepStmt.executeQuery()" );
 			ResultSet rs = prepStmt.executeQuery();
 			bMessageSqlQuery = false;
